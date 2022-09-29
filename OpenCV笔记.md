@@ -206,7 +206,7 @@ img.item(10,10,2)
 
 一般通过.dtype来访问图像数据类型，代码中的大量错误是由无效的数据类型引起的。
 
-## 图像中的感兴趣区域
+## 图像中的感兴趣区域（ROI）
 
 确定搜索目标的大致范围，然后将其复制到另一个区域再进行搜索，也就是逐步搜索的操作，这样可以提高准确性和性能。
 
@@ -237,11 +237,11 @@ b = img[:,:,0]
 img = cv.merge((b,g,r))
 ```
 
-### 制作图像边界（填充）
+## 制作图像边界（填充）
 
 ### cv.copyMakeBorder()
 
-该函数采用以下参数：、
+该函数采用以下参数：
 
 - src-输入的图像
 
@@ -281,7 +281,7 @@ plt.show()
 
 结果，图像是通过 matplotlib 展示的。因此红色和蓝色通道将互换：
 
-![](https://opencv.apachecn.org/docs/4.0.0/img/border.jpg)
+<img title="" src="https://opencv.apachecn.org/docs/4.0.0/img/border.jpg" alt="" data-align="inline"> 
 
 # 图像的算术运算
 
@@ -318,4 +318,223 @@ cv.destroyAllWindows()
 
 ## 按位操作
 
-111
+```python
+#加载两张图片
+img1 = cv.imread('messi5.jpg')
+img2 = cv.imread('opencv-logo-white.png')
+#我想在左上角放置一个logo，所以我创建了一个 ROI,并且这个ROI的宽和高为我想放置的logo的宽和高
+rows,cols,channels = img2.shape
+roi = img1 [0:rows,0:cols]
+#现在创建一个logo的掩膜，通过对logo图像进行阈值，并对阈值结果并创建其反转掩膜
+img2gray = cv.cvtColor(img2,cv.COLOR_BGR2GRAY)
+ret,mask = cv.threshold(img2gray,10,255,cv.THRESH_BINARY)
+mask_inv = cv.bitwise_not(mask)
+#现在使 ROI 中的徽标区域变黑
+img1_bg = cv.bitwise_and(roi,roi,mask = mask_inv)
+#仅从徽标图像中获取徽标区域。
+img2_fg = cv.bitwise_and(img2,img2,mask = mask)
+#在 ROI 中放置徽标并修改主图像
+dst = cv.add(img1_bg,img2_fg)
+img1 [0:rows,0:cols] = dst
+cv.imshow('res',img1)
+cv.waitKey(0)
+cv.destroyAllWindows()
+```
+
+效果图：左边为创建的蒙版，右边为最终结果。
+
+![](https://opencv.apachecn.org/docs/4.0.0/img/overlay.jpg)
+
+## 按位取反操作
+
+### cv.bitwise_not(img)
+
+![](https://img-blog.csdnimg.cn/20210614215156126.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L20wXzQ4MDk1ODQx,size_16,color_FFFFFF,t_70)
+
+## 按位与操作
+
+### cv.bitwise_and(argu1.argu2.argu3)
+
+argu1为目标图片
+
+argu2为源图片
+
+argu3为掩膜
+
+## 掩膜
+
+mask就是位图，与原图像进行位运算，也就是说选择哪个像素允许拷贝，哪个像素不允许拷贝。
+
+# 图像处理
+
+## 颜色空间转换
+
+### cv.cvtColor(img,flag)
+
+flag决定了转换的类型，如下：
+
+从BGR->Gray：cv.COLOR_BGR2GRAY
+
+从BGR->HSV：cv.COLOR_BGR2HSV
+
+## 目标追踪
+
+HSV比BGR在颜色空间上更容易表示颜色。常用来追踪对象
+
+方法如下：
+
+- 提取视频每一帧
+
+- BGR转换为HSV颜色空间
+
+- 用特定像素范围对HSV图片做阈值
+
+- 提取对象
+
+```python
+import cv2 as cv
+import numpy as np
+cap = cv.VideoCapture(0)
+while(1):
+    # Take each frame
+    _, frame = cap.read()
+    # Convert BGR to HSV
+    hsv = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
+    # define range of blue color in HSV
+    lower_blue = np.array([110,50,50])
+    upper_blue = np.array([130,255,255])
+    # Threshold the HSV image to get only blue colors
+    mask = cv.inRange(hsv, lower_blue, upper_blue)
+    # Bitwise-AND mask and original image
+    res = cv.bitwise_and(frame,frame, mask= mask)
+    cv.imshow('frame',frame)
+    cv.imshow('mask',mask)
+    cv.imshow('res',res)
+    k = cv.waitKey(5) & 0xFF
+    if k == 27:
+        break
+cv.destroyAllWindows()
+```
+
+效果图：
+
+![图片](https://opencv.apachecn.org/docs/4.0.0/img/4-1-1.jpg)
+
+## 如何找到HSV值
+
+不需要输入图片，只需要输入需要的BGR值，转换就行
+
+```python
+>>> green = np.uint8([[[0,255,0 ]]])
+>>> hsv_green = cv.cvtColor(green,cv.COLOR_BGR2HSV)
+>>> print( hsv_green )
+[[[ 60 255 255]]]
+```
+
+## 图像阈值
+
+### cv.threshhold(argu1,argu2,arug3,argu4)
+
+argu1为原图像，一般为灰度图
+
+argu2对像素值进行分类的阈值
+
+argu3为当像素值高于阈值时应该被赋予的新像素值
+
+argu4为阈值方法，包括：
+
+| 阈值方法                 | 说明                      |
+| -------------------- | ----------------------- |
+| cv.THRESH_BINARY     | 超过阈值部分取maxval（最大值），否则取0 |
+| cv.THRESH_BINARY_INV | THRESH_BINARY的反转        |
+| cv.THRESH_TRUNC      | 大于阈值部分设为阈值，否则不变         |
+| cv.THRESH_TOZERO     | 大于阈值部分不改变，否则设为0         |
+| cv.THRESH_TOZERO_INV | THRESH_TOZERO的反转        |
+
+```python
+import cv2 as cv
+import numpy as np
+from matplotlib import pyplot as plt
+img = cv.imread('gradient.png',0)
+ret,thresh1 = cv.threshold(img,127,255,cv.THRESH_BINARY)
+ret,thresh2 = cv.threshold(img,127,255,cv.THRESH_BINARY_INV)
+ret,thresh3 = cv.threshold(img,127,255,cv.THRESH_TRUNC)
+ret,thresh4 = cv.threshold(img,127,255,cv.THRESH_TOZERO)
+ret,thresh5 = cv.threshold(img,127,255,cv.THRESH_TOZERO_INV)
+titles = ['Original Image','BINARY','BINARY_INV','TRUNC','TOZERO','TOZERO_INV']
+images = [img, thresh1, thresh2, thresh3, thresh4, thresh5]
+for i in xrange(6):
+    plt.subplot(2,3,i+1),plt.imshow(images[i],'gray')
+    plt.title(titles[i])
+    plt.xticks([]),plt.yticks([])
+plt.show()
+```
+
+效果图：
+
+![图片](https://opencv.apachecn.org/docs/4.0.0/img/Image_Thresholding_1.png)
+
+## 图像变换
+
+# 特征检测与描述
+
+## 蛮力匹配(Brute Force)
+
+### cv.BFMatcher(normType,crossCheck)
+
+该方法可以创建一个BFMatcher对象。参数normTYPE指定要使用的距离测量方法。默认情况为cv.NORM_L2，适合SIFT和SURF。对于二进制字符串的描述子，如ORB,BRIEF,BRISK等应使用cv.NORM_HAMMING。如果ORB使用WTA_K==3or4，则应使用cv.NORM_HAMMING2。参数crossCheck默认为false。如果为True，则仅返回具有值（i，j）的匹配，使得集合 A 中的第 i 个描述子具有集合 B 中的第 j 个描述子作为最佳匹配，反之亦然。也就是说，两组中的两个特征点应该相互匹配。
+
+### .match()
+
+BFMatcher对象的方法，返回最佳匹配。
+
+.knnMatch()
+
+BFMatcher对象的方法，返回k个最佳匹配，k可以指定。
+
+### 对ORB描述子使用BF
+
+尝试在trainImage中查找queryImage
+
+- 第一步：加载图像，查找描述子
+
+```python
+import numpy as np
+import cv2 as cv
+import matplotlib.pyplot as plt
+img1 = cv.imread('box.png',0)          # queryImage
+img2 = cv.imread('box_in_scene.png',0) # trainImage
+# Initiate ORB detector
+orb = cv.ORB_create()
+# find the keypoints and descriptors with ORB
+kp1, des1 = orb.detectAndCompute(img1,None)
+kp2, des2 = orb.detectAndCompute(img2,None)
+```
+
+- 第二步：创建一个BF对象并且启用crossCheck获得更好的结果。然后使用.match()方法获得最佳匹配，按照距离升序对它们进行排序，最佳匹配（距离最小）出现在前面，仅画出前十个匹配
+
+```python
+# create BFMatcher object
+bf = cv.BFMatcher(cv.NORM_HAMMING, crossCheck=True)
+# Match descriptors.
+matches = bf.match(des1,des2)
+# Sort them in the order of their distance.
+matches = sorted(matches, key = lambda x:x.distance)
+# Draw first 10 matches.
+img3 = cv.drawMatches(img1,kp1,img2,kp2,matches[:10], None, flags=2)
+plt.imshow(img3),plt.show()
+```
+
+效果图：
+
+![matcher_result1.jpg](https://opencv.apachecn.org/docs/4.0.0/img/1b143125b100d1d079dd7625281e4349.jpg)
+
+matches时DMatch对象的列表。具有以下属性
+
+- .distance 描述子之间的距离。越低越好
+
+- .trainldx 目标图像中描述子的索引
+
+- .queryldx 查询图像中描述子的索引
+
+- .imgldx 目标图像的索引
