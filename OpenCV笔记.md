@@ -200,7 +200,7 @@ img.item(10,10,2)
 
 ### .shape
 
-一般通过.shape访问图像形状。
+一般通过.shape访问图像形状。返回值为h，w
 
 ### .dtype
 
@@ -353,7 +353,7 @@ cv.destroyAllWindows()
 
 ## 按位与操作
 
-### cv.bitwise_and(argu1.argu2.argu3)
+### cv.bitwise_and(argu1,argu2,argu3)
 
 argu1为目标图片
 
@@ -397,7 +397,7 @@ import numpy as np
 cap = cv.VideoCapture(0)
 while(1):
     # Take each frame
-    _, frame = cap.read()
+    re, frame = cap.read()
     # Convert BGR to HSV
     hsv = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
     # define range of blue color in HSV
