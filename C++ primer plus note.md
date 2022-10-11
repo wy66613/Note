@@ -336,3 +336,51 @@ double cube(double x)
 使用sizeof()可以获得整个数组的长度，但是对函数参数中的数组形参使用sizeof()只能获得指针变量的长度。这就是必须显式传递数组长度的原因——指针本身并没有指出数组的长度。
 
 为将数组类型和元素数量告诉数组处理函数，必须通过两个不同的参数传递它们，同时，这两个参数也是可以根据自身需要修改的。第二个参数可以不是数组长度，而是要读取的最大元素数。
+
+### 7.3.4 使用数组区间的函数
+
+向函数参数传递数组时还可以通过传递两个指针来完成，一个指针标识数组的开头，另一个指针标识数组的尾部（STL使用**超尾**来标识数组的尾部）也就是说，对于数组而言标识数组结尾的参数是指向最后一个元素后面的指针，例：
+
+```c++
+#include<iostream>
+const int ArSize=8;
+int sum_arr(const int* begin,const int* end);
+int main()
+{
+    using namespace std;
+    int cookies(ArSize)={1,2,3,4,5,6,7,8};
+    int sum=sun_arr(cookies,cookies+ArSize);
+    sum=sum_arr(cookies,cookies+3);
+    sum=sum_arr(cookies+4,cookies+8);
+    return 0;
+}
+int sum_arr(const int*begin,const int*end)
+{
+    const int* pt;
+    int total=0;
+    for (pt=begin,pt!=end;pt++) total=total+*pt;
+    return total;
+}
+```
+
+根据指针减法规则，在sum_arr()中，表达式end-begin是一个整数值，等于数组的元素数目。
+
+### 7.3.5 指针和const
+
+const用于指针有两种方式，第一种是让指针指向一个常量对象，防止使用该指针来修改所指向的值，第二种是将指针本身声明为常量，防止改变指针指向的位置。
+
+第一种：
+
+```c++
+int age=39;
+const int* pt = &age;
+```
+
+这里pt的声明并不意味着它指向的值是一个常量，而只是意味着对pt而言这个值是常量。可以通过age变量来修改age的值，但不能用pt指针来修改它。但是反过来，C++禁止将const的地址赋给非const指针。例如下面这种情况是非法的：
+
+```c++
+const float g_earth = 9.80;
+float* pm = &g_earth;
+```
+
+
