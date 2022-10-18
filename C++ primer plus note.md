@@ -785,7 +785,7 @@ void funct2(int q)
 无链接性的局部变量虽然只在代码块中可用，但它在代码块不处于活动状态时仍然存在。因此在两次函数调用之间，静态局部变量的值将保持不变（再生）。示例代码如下：
 
 ```c++
-#include<isotream>
+#include<iostream>
 const int ArSize = 10;
 void strcount(const char * str);
 
@@ -802,8 +802,9 @@ int main()
         while(next!='\n') cin.get(next);
         strcount(input);
         cout<<"Enter next line(empty line to quit):\n";
-        cin
+        cin.get(input,ArSize);
     }
+    cout << "Bye\n";
     return 0;
 }
 
@@ -815,9 +816,13 @@ void strcount(const char * str)
     cout<<"str contains ";
     while(*str++) count++;
     total += count;
-    cout << count << "characters\n";
-    cout << total << "characters total\n";
+    cout << count << " characters\n";
+    cout << total << " characters total\n";
 }
 ```
+
+该程序演示了静态局部变量的**再生**特性，还演示了一种处理行输入可能长于目标数组的方法。方法cin.get(input,ArSize)将一直读取输入，直到到达了行尾或读取了ArSize-1个字符为止。它把换行符留在输入队列中。该程序使用cin.get(next)读取行输入后的字符。如果next是换行符，则说明cin.get(input,ArSize)读取了整行；否则说明还有字符没有读取。随后，程序使用一个循环来丢弃余下的字符。可以修改代码使程序读取行中余下的字符。该程序还使用了这样一个事实：用get(char*,int)来读取空行将导致cin为false。
+
+### 9.2.7 说明符和限定符
 
 
