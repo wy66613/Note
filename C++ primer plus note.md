@@ -751,7 +751,7 @@ int global = 1000; //外部链接性
 static int one file = 50; //内部链接性
 int main()
 {
-    
+
 }
 void funct1(int n)
 {
@@ -760,8 +760,64 @@ void funct1(int n)
 }
 void funct2(int q)
 {
-    
+
 }
 ```
 
 所有的静态持续变量都有下述初始化特征：未被初始化的静态变量的所有位都被设置为0.这种变量被称为零初始化的。
+
+### 9.2.4 静态持续性、外部链接性
+
+**单定义规则：** 变量只能有一次定义。C++有两种变量声明，一种是定义声明（简称为定义），另一种为引用声明（引用声明使用关键字**extern**，不进行初始化，否则，声明为定义，导致分配内存空间）。如果要在多个文件中使用外部变量，只需在一个文件中包含该变量的定义（单定义规则），但在使用该变量的其他所有文件中都必须使用关键字extern声明。
+
+**注意：** 单定义规则并非意味着不能有多个变量的名称相同。例如，不同函数中声明的同名自动变量是彼此独立的。另外，局部变量可能隐藏同名的全局变量。
+
+在函数中使用关键字extern声明全局变量（外部变量）的作用是通过该名称使用在外部定义的变量。另外，该声明是可选的。
+
+在必要的时候要区分全局变量和局部变量，因为若要保持数据的完整性，应尽量避免对数据进行不必要的访问。外部存储尤其适合表示常量数据，因为可以使用关键字const来防止数据被修改。
+
+### 9.2.5 静态持续性、内部链接性
+
+将static限定符用于作用域为整个文件的变量时，该变量的链接性为内部，意味着该变量只能在所属的文件中使用。如果文件定义了一个静态外部变量（使用static，链接性为内部），其名称与另一个文件中声明的常规外部变量相同，则在该文件中，静态变量将隐藏常规外部变量。
+
+### 9.2.6 静态存储持续性、无链接性
+
+无链接性的局部变量虽然只在代码块中可用，但它在代码块不处于活动状态时仍然存在。因此在两次函数调用之间，静态局部变量的值将保持不变（再生）。示例代码如下：
+
+```c++
+#include<isotream>
+const int ArSize = 10;
+void strcount(const char * str);
+
+int main()
+{
+    using namespace std;
+    char input[ArSize];
+    char next;
+    cout<<"Enter a line:\n";
+    cin.get(input,ArSize);
+    while(cin)
+    {
+        cin.get(next);
+        while(next!='\n') cin.get(next);
+        strcount(input);
+        cout<<"Enter next line(empty line to quit):\n";
+        cin
+    }
+    return 0;
+}
+
+void strcount(const char * str)
+{
+    using namespace std;
+    static int total = 0;
+    int count = 0;
+    cout<<"str contains ";
+    while(*str++) count++;
+    total += count;
+    cout << count << "characters\n";
+    cout << total << "characters total\n";
+}
+```
+
+
