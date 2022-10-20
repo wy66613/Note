@@ -926,3 +926,151 @@ namespace mft=my_favorite things;
 ```
 
 未命名的名称空间不能再未命名名称空间所属文件之外的其它文件中使用该名称空间中的名称，也就是说提供了**链接性为内部的静态变量的替代品**。
+
+### 9.3.3 名称空间示例
+
+头文件：
+
+```c++
+#include<string>
+namespace pers
+{
+	struct Person
+	{
+		std::string fname;
+		std::string lname;
+	};
+	void getPerson(Person&);
+	void showPerson(const Person&);
+}
+
+namespace debts
+{
+	using namespace pers;
+	struct Debt
+	{
+		Person name;
+		double amount;
+	};
+	void getDebt(Debt&);
+	void showDebt(const Debt&);
+	double sumDebts(const Debt ar[], int n);
+}
+```
+
+源文件1：
+
+```c++
+#include<iostream>
+#include"namesp.h"
+
+namespace pers
+{
+	using std::cout;
+	using std::cin;
+	void getPerson(Person& rp)
+	{
+		cout << "Enter first name: ";
+		cin >> rp.fname;
+		cout << "Enter last name: ";
+		cin >> rp.lname;
+	}
+	void showPerson(const Person& rp)
+	{
+		cout << rp.lname << "," << rp.fname ;
+	}
+}
+
+namespace debts
+{
+	void getDebts(Debt& rd)
+	{
+		getPerson(rd.name);
+		std::cout << "Enter debt: ";
+		std::cin >> rd.amount;
+	}
+	void showDebt(const Debt& rd)
+	{
+		showPerson(rd.name);
+		std::cout << ":$" << rd.amount << std::endl;
+	}
+	double sumDebts(const Debt ar[], int n)
+	{
+		double total = 0;
+		for (int i = 0; i < n; i++)
+			total += ar[i].amount;
+		return total;
+	}
+}
+```
+
+源文件2：
+
+```c++
+#include<iostream>
+#include"namesp.h"
+
+void other(void);
+void another(void);
+int main(void)
+{
+	using debts::Debt;
+	using debts::showDebt;
+	Debt golf = { {"Benny","Goatsniff"},120.0 };
+	showDebt(golf);
+	other();
+	another();
+	return 0;
+}
+
+void other(void)
+{
+	using std::cout;
+	using std::endl;
+	using namespace debts;
+	Person dg = { "Doodles","Glister" };
+	showPerson(dg);
+	cout << endl;
+	Debt zippy[3];
+	int i;
+	for (i = 0; i < 3; i++)
+		getDebt(zippy[i]);
+	for (i = 0; i < 3; i++)
+		showDebt(zippy[i]);
+	cout << "Total debt:$" << sumDebts(zippy, 3) << endl;
+}
+
+void another(void)
+{
+	using pers::Person;
+	Person collector = { "Milo","Rightshift" };
+	pers::showPerson(collector);
+	std::cout << std::endl;
+}
+```
+
+### 9.3.4 名称空间及其前途
+
+关于名称空间的统一编程理念：
+
+- 使用在已命名的名称空间中声明的变量，而不是使用外部全局变量。
+
+- 使用在已命名的名称空间中声明的变量，而不是使用静态全局变量。
+
+- 如果开发了一个函数库或类库，将其放在一个名称空间中，事实上，C++当前提倡将标准函数库放在名称空间std中。
+
+- 仅将编译指令using作为一种将旧代码转换为使用名称空间的权宜之计
+
+- 不要在头文件中使用using编译指令。
+
+- 导入名称时首选使用作用域解析运算符或using声明的方法。
+
+- 对于using声明，首选将其作用域设置为局部而不是全局。
+
+**使用名称空间的主旨是简化大型变成项目的管理工作**
+
+## 9.4 总结
+
+C++鼓励在开发程序时使用多个文件，一种有效的组织策略是，使用头文件来定义用户类型，为操纵用户类型的函数提供函数原型；并将函数定义放在一个独立的源代码文件中。头文件和源代码文件一起定义和实现了用户定义的类型及其使用方式。最后，将main（）和其它使用这些函数的函数放在第三个文件中。
+
+# 第十章 对象和类
