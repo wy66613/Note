@@ -935,26 +935,26 @@ namespace mft=my_favorite things;
 #include<string>
 namespace pers
 {
-	struct Person
-	{
-		std::string fname;
-		std::string lname;
-	};
-	void getPerson(Person&);
-	void showPerson(const Person&);
+    struct Person
+    {
+        std::string fname;
+        std::string lname;
+    };
+    void getPerson(Person&);
+    void showPerson(const Person&);
 }
 
 namespace debts
 {
-	using namespace pers;
-	struct Debt
-	{
-		Person name;
-		double amount;
-	};
-	void getDebt(Debt&);
-	void showDebt(const Debt&);
-	double sumDebts(const Debt ar[], int n);
+    using namespace pers;
+    struct Debt
+    {
+        Person name;
+        double amount;
+    };
+    void getDebt(Debt&);
+    void showDebt(const Debt&);
+    double sumDebts(const Debt ar[], int n);
 }
 ```
 
@@ -966,41 +966,41 @@ namespace debts
 
 namespace pers
 {
-	using std::cout;
-	using std::cin;
-	void getPerson(Person& rp)
-	{
-		cout << "Enter first name: ";
-		cin >> rp.fname;
-		cout << "Enter last name: ";
-		cin >> rp.lname;
-	}
-	void showPerson(const Person& rp)
-	{
-		cout << rp.lname << "," << rp.fname ;
-	}
+    using std::cout;
+    using std::cin;
+    void getPerson(Person& rp)
+    {
+        cout << "Enter first name: ";
+        cin >> rp.fname;
+        cout << "Enter last name: ";
+        cin >> rp.lname;
+    }
+    void showPerson(const Person& rp)
+    {
+        cout << rp.lname << "," << rp.fname ;
+    }
 }
 
 namespace debts
 {
-	void getDebts(Debt& rd)
-	{
-		getPerson(rd.name);
-		std::cout << "Enter debt: ";
-		std::cin >> rd.amount;
-	}
-	void showDebt(const Debt& rd)
-	{
-		showPerson(rd.name);
-		std::cout << ":$" << rd.amount << std::endl;
-	}
-	double sumDebts(const Debt ar[], int n)
-	{
-		double total = 0;
-		for (int i = 0; i < n; i++)
-			total += ar[i].amount;
-		return total;
-	}
+    void getDebts(Debt& rd)
+    {
+        getPerson(rd.name);
+        std::cout << "Enter debt: ";
+        std::cin >> rd.amount;
+    }
+    void showDebt(const Debt& rd)
+    {
+        showPerson(rd.name);
+        std::cout << ":$" << rd.amount << std::endl;
+    }
+    double sumDebts(const Debt ar[], int n)
+    {
+        double total = 0;
+        for (int i = 0; i < n; i++)
+            total += ar[i].amount;
+        return total;
+    }
 }
 ```
 
@@ -1014,38 +1014,38 @@ void other(void);
 void another(void);
 int main(void)
 {
-	using debts::Debt;
-	using debts::showDebt;
-	Debt golf = { {"Benny","Goatsniff"},120.0 };
-	showDebt(golf);
-	other();
-	another();
-	return 0;
+    using debts::Debt;
+    using debts::showDebt;
+    Debt golf = { {"Benny","Goatsniff"},120.0 };
+    showDebt(golf);
+    other();
+    another();
+    return 0;
 }
 
 void other(void)
 {
-	using std::cout;
-	using std::endl;
-	using namespace debts;
-	Person dg = { "Doodles","Glister" };
-	showPerson(dg);
-	cout << endl;
-	Debt zippy[3];
-	int i;
-	for (i = 0; i < 3; i++)
-		getDebt(zippy[i]);
-	for (i = 0; i < 3; i++)
-		showDebt(zippy[i]);
-	cout << "Total debt:$" << sumDebts(zippy, 3) << endl;
+    using std::cout;
+    using std::endl;
+    using namespace debts;
+    Person dg = { "Doodles","Glister" };
+    showPerson(dg);
+    cout << endl;
+    Debt zippy[3];
+    int i;
+    for (i = 0; i < 3; i++)
+        getDebt(zippy[i]);
+    for (i = 0; i < 3; i++)
+        showDebt(zippy[i]);
+    cout << "Total debt:$" << sumDebts(zippy, 3) << endl;
 }
 
 void another(void)
 {
-	using pers::Person;
-	Person collector = { "Milo","Rightshift" };
-	pers::showPerson(collector);
-	std::cout << std::endl;
+    using pers::Person;
+    Person collector = { "Milo","Rightshift" };
+    pers::showPerson(collector);
+    std::cout << std::endl;
 }
 ```
 
@@ -1074,3 +1074,218 @@ void another(void)
 C++鼓励在开发程序时使用多个文件，一种有效的组织策略是，使用头文件来定义用户类型，为操纵用户类型的函数提供函数原型；并将函数定义放在一个独立的源代码文件中。头文件和源代码文件一起定义和实现了用户定义的类型及其使用方式。最后，将main（）和其它使用这些函数的函数放在第三个文件中。
 
 # 第十章 对象和类
+
+## 10.2 抽象和类
+
+### 10.2.2 C++中的类
+
+只能通过公有成员函数（或友元函数）访问对象的私有成员。因此，公有成员函数是程序和对象的私有成员之间的桥梁，提供了对象和程序之间的接口。防止程序直接访问数据被称为数据隐藏。类设计尽可能将公有接口与实现细节分开。将实现细节放在一起并将它们与抽象分开被称为封装。数据隐藏也是一种封装。原则是将实现细节从接口设计中分离出来。如果以后找到了更好的、实现数据表示或成员函数细节的方法，可以对这些细节进行修改，而无需修改程序接口，这使得程序更容易维护。
+
+类对象的默认访问控制为private
+
+```c++
+class World
+{
+    float mass;
+    char name[20];
+public:
+    void tellall(void);
+};
+```
+
+### 10.2.3 实现类成员函数
+
+定义成员函数时使用作用域解析运算符来表示函数所属的类。
+
+定义位于类声明中的函数都将自动成为内联函数。如果要在类声明之外定义成员函数，并使其成为内联函数，只需在类实现部分中定义函数时使用inline限定符即可。
+
+## 10.3 类的构造函数和析构函数
+
+### 10.3.1 声明和定义构造函数
+
+构造函数的原型和函数头没有返回值，也没有被声明为void类型。实际上，构造函数没有声明类型。
+
+为了避免构造函数的参数名与类成员名称相同，一般在数据成员名中使用 **m_** 前缀（或使用 **_** 后缀）：
+
+```c++
+class Stock
+{
+private:
+    string m_company;
+    long m_shares;  
+};
+```
+
+### 10.3.2 使用构造函数
+
+构造函数可以显式调用或隐式调用：
+
+```c++
+Stock food = Stock("World Cabbage",250,1.25); //显式
+Stock garment("Furr Mason",50,2.5); //隐式
+Stock *pstock = new Stock("Electroshock Games",18,19.0); //构造函数与new一起使用
+```
+
+### 10.3.3 默认构造函数
+
+默认构造函数是在未提供显式初始化值时用来创建对象的构造函数。
+
+为类定义了构造函数后，必须同时提供默认构造函数。
+
+定义默认构造函数的方式有两种，一种是给已有构造函数的所有参数提供默认值；另一种方式是通过函数重载来定义另一个构造函数（一个没有参数的构造函数）。
+
+在设计类时，通常应提供对所有类成员做隐式初始化的默认构造函数。
+
+### 10.3.4 析构函数
+
+析构函数的名称在类名前加上\~。析构函数也可以没有返回值和声明类型，但是析构函数**没有参数**。
+
+析构函数不应显式调用，调用时机由编译器决定。
+
+如果构造函数使用了new，则必须提供使用delete的析构函数。
+
+### 10.3.5 改进Stock类
+
+列表初始化语法也适用于类，只要提供与某个构造函数的参数列表匹配的内容并用大括号将它们括起。
+
+只要类方法不修改调用对象，则应将其声明为const。方法如下：
+
+```c++
+void show() const; //函数原型
+void Stock::show() const; //函数头
+```
+
+## 10.4 this指针
+
+this指针用来指向调用成员函数的对象（this被作为隐藏参数传递给方法）。
+
+每个成员函数（包括构造和析构函数）都有一个this指针，this指针指向调用对象。\*this就是对象本身。
+
+## 10.5 对象数组
+
+声明对象数组的方法与声明标准类型数组相同。
+
+```c++
+Stock mystuff[4];
+```
+
+当程序创建未被显式初始化的类对象时，总是调用默认构造函数。上述声明要求这个类要么没有显式地定义任何构造函数（将使用不执行任何操作的隐式默认构造函数），要么定义了一个显式默认构造函数。可以用构造函数来初始化数组元素。这种情况下必须为每个元素调用构造函数。
+
+```c++
+const int STKS = 4;
+Stock stocks[STKS] = {
+    Stock("n",12.5,20),
+    ······
+}
+```
+
+初始化对象数组地方案是，首先使用默认构造函数创建数组元素，然后花括号中的构造函数将创建临时对象，然后将临时对象的内容复制到相应的元素中。因此，要创建类对象数组，则这个类必须有默认构造函数。
+
+## 10.6 类作用域
+
+### 10.6.3 作用域为类的常量
+
+使符号常量的作用域为类的错误方法：
+
+```c++
+class Bakery
+{
+private:
+    const int Months = 12;
+    double costs[Months];  
+};
+```
+
+正确的方法有两种：
+
+```c++
+//第一种方式是在类中声明一个枚举
+class Bakery
+{
+private:
+    enum {months = 12};
+    double costs[Months];  
+};
+```
+
+用这种方式声明枚举不会创建类数据成员，这意味着所有对象都不含枚举。Months只是一个符号名称，在作用域为整个类的代码中遇到他时编译器会用30来替换它。这里使用枚举只是为了创建符号常量，不创建枚举类型的变量，因此不需要提供枚举名。
+
+```c++
+//第二种方式是使用关键字static
+class Bakery
+{
+private:
+    static const int Months = 12;
+    double costs[Months];  
+};
+```
+
+类中使用static限定的常量将与其它静态变量存储在一起，而不是存储在对象中，因此只有一个Months常量被所有的Bakery对象共享。
+
+## 10.7 抽象数据类型
+
+用类来实现ADT，以栈为例：
+
+```c++
+//stack.h
+#ifndef STACK_H_
+#define STACK_H_
+typedef unsigned long Item;
+class Stack
+{
+private:
+	enum{MAX=10};
+	Item items[MAX];
+	int top;
+public:
+	Stack();
+	bool isempty() const;
+	bool isfull() const;
+	bool push(const Item& item);
+	bool pop(Item& item);
+};
+#endif
+```
+
+```c++
+//stack.cpp
+#include"stack.h"
+Stack::Stack()
+{
+	top = 0;
+}
+
+bool Stack::isempty() const
+{
+	return top == 0;
+}
+
+bool Stack::isfull() const
+{
+	return top == MAX;
+}
+
+bool Stack::push(const Item& item)
+{
+	if (top < MAX)
+	{
+		items[top++] = item;
+		return true;
+	}
+	else
+		return false;
+}
+
+bool Stack::pop(Item& item)
+{
+	if (top > 0)
+	{
+		item = items[--top];
+		return true;
+	}
+	else
+		return false;
+}
+```
+
+# 第十一章 使用类
