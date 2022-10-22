@@ -1234,15 +1234,15 @@ typedef unsigned long Item;
 class Stack
 {
 private:
-	enum{MAX=10};
-	Item items[MAX];
-	int top;
+    enum{MAX=10};
+    Item items[MAX];
+    int top;
 public:
-	Stack();
-	bool isempty() const;
-	bool isfull() const;
-	bool push(const Item& item);
-	bool pop(Item& item);
+    Stack();
+    bool isempty() const;
+    bool isfull() const;
+    bool push(const Item& item);
+    bool pop(Item& item);
 };
 #endif
 ```
@@ -1252,40 +1252,120 @@ public:
 #include"stack.h"
 Stack::Stack()
 {
-	top = 0;
+    top = 0;
 }
 
 bool Stack::isempty() const
 {
-	return top == 0;
+    return top == 0;
 }
 
 bool Stack::isfull() const
 {
-	return top == MAX;
+    return top == MAX;
 }
 
 bool Stack::push(const Item& item)
 {
-	if (top < MAX)
-	{
-		items[top++] = item;
-		return true;
-	}
-	else
-		return false;
+    if (top < MAX)
+    {
+        items[top++] = item;
+        return true;
+    }
+    else
+        return false;
 }
 
 bool Stack::pop(Item& item)
 {
-	if (top > 0)
-	{
-		item = items[--top];
-		return true;
-	}
-	else
-		return false;
+    if (top > 0)
+    {
+        item = items[--top];
+        return true;
+    }
+    else
+        return false;
 }
 ```
 
 # 第十一章 使用类
+
+ **轻松地使用这种语言。不要觉得必须使用所有的特性，不要在第一次学习时就试图使用所有的特性。**
+
+## 11.1 运算符重载
+
+要重载运算符需要使用被称为运算符函数的特殊函数形式。运算符函数的格式如下：
+
+```c++
+operator op(argument list)
+//operator +()
+```
+
+## 11.2 计算时间：一个运算符重载示例
+
+### 11.2.2 重载限制
+
+- 重载后的运算符必须至少有一个操作数是用户定义的类型。
+
+- 使用运算符时不能违反运算符原来的句法规则。不能修改运算符的优先级。
+
+- 不能创建新的运算符。
+
+- 不能重载下面的运算符。
+
+sizeof  .  \*  ::  ?:  
+
+- 下面的运算符只能通过成员函数进行重载
+
+=  ()  []  ->
+
+## 11.3 友元
+
+除了公有类，C++提供了友元这种形式的访问权限：友元函数。友元类。友元成员函数。
+
+友元函数是非成员函数，但是它可以访问类中的私有成员。
+
+### 11.3.1 创建友元
+
+第一步：将函数原型放在类声明中，并在原型前声明关键字 friend
+
+```c++
+friend Time operator*(double m,const Time&);
+```
+
+operator*()函数不是成员函数，不能使用成员运算符来调用；但是它与成员函数的访问权限相同。
+
+第二步：编写函数定义，不用加类名限定符，函数头中不用friend关键字。
+
+**如果要为类重载运算符，并将非类的项作为其第一个操作数，则可以用友元函数来反转操作数的顺序**
+
+---
+
+<<重载的第一个版本，如果用类成员函数来重载<<，会令人迷惑。但通过使用友元函数可以像下面这样重载：
+
+```c++
+void operator<<(ostream&os,const Time&t)
+{
+    os<<t.hours; //os为一个ostream对象，可以是cout等
+}
+```
+
+---
+
+<<重载的第一个版本不能实现多个<<连用，因为<<运算符要求左侧是一个ostream对象，如果要连用<<运算符，只需要将第一个版本中函数的返回值修改为ostream对象的引用即可：
+
+```c++
+ostream& operator<<(ostream&os,const Time &t)
+{
+    os<<t.hours;
+    return os;
+}
+```
+
+---
+
+## 11.5 再谈重载：一个矢量类*
+
+## 11.6 类的自动转换和强制类型转换*
+
+# 第十二章 类和动态内存分配
