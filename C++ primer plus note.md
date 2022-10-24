@@ -1335,6 +1335,19 @@ friend Time operator*(double m,const Time&);
 
 operator*()函数不是成员函数，不能使用成员运算符来调用；但是它与成员函数的访问权限相同。
 
+将友元函数编写为非友元函数：
+
+```c++
+Time operator*(double m,const Time&t)
+{
+    return t*m;
+}
+```
+
+这个版本将Time对象t作为一个整体使用，让成员函数来处理私有数据，因此不必是友元。
+
+---
+
 第二步：编写函数定义，不用加类名限定符，函数头中不用friend关键字。
 
 **如果要为类重载运算符，并将非类的项作为其第一个操作数，则可以用友元函数来反转操作数的顺序**
@@ -1362,9 +1375,73 @@ ostream& operator<<(ostream&os,const Time &t)
 }
 ```
 
----
+## 11.5 再谈重载：一个矢量类
 
-## 11.5 再谈重载：一个矢量类*
+矢量类Vector声明如下：
+
+```c++
+//vector.h
+class Vector
+{
+public:
+    enum Mode{RECT,POL}; //状态成员，控制构造函数使用哪种形式
+private:
+    double x;
+    double y;
+    double mag;
+    double ang;
+    Mode mode;
+    void set_mag();
+    void set_ang();
+    void set_x();
+    void set_y();
+public:
+    Vector();
+    Vector(double n1,double n2,Mode form=RECT);
+    void reset(double n1,double n2,Mode form = RECT);
+    ~Vector();
+    double xval() const {return x;}
+    doubel yval() const {return y;}
+    doubel magval() const {return mag;}
+    doubel angval() const {return ang;}
+    void polar_mode();
+    void rect_mode();
+    Vector operator+(const Vector &b) const;
+    Vector operator-(const Vector &b) const;
+    Vector operator-() const;
+    Vector operator*(double n) const;
+    friend Vector operator*(double n,const Vector &a);
+    friend std::ostream& operator<<(std::ostream& os, const Vector& v);
+}
+```
+
+构造函数的定义：
+
+```c++
+Vector::Vector(double n1,double n2,Mode form)
+{
+    mode=form;
+    if(form==RECT)
+    {
+        x=n1;
+        y=n2;
+        set_mag();
+        set_ang();
+    }
+    else if(form==POL)
+    {
+        mag=n1;
+        ang=n2;
+        set_x();
+        set_y();    
+    }
+    else
+    {
+        x=y=mag=ang=0.0;
+        mode=RECT;    
+    }
+}
+```
 
 ## 11.6 类的自动转换和强制类型转换*
 
