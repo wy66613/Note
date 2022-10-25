@@ -116,7 +116,7 @@ unsigned int Gcd(unsigned int M, unsigned N)
 }
 ```
 
-## 高效率德取幂运算
+## 高效率的取幂运算
 
 ```c++
 long long Pow(long long X, unsigned int N)
@@ -132,6 +132,77 @@ long long Pow(long long X, unsigned int N)
 }
 ```
 
-# 第三章 表、栈和队列
+# 第七章 排序
 
+## 插入排序
 
+### 算法实现
+
+```c++
+void InsertSort(int arr[],int n)
+{
+    int j,p;
+    int tmp;
+    for(p=1;p<n;p++)
+    {
+        tmp=arr[p];
+        for(j=p;j>0&&arr[j-1]>tmp;j--) arr[j]=arr[j-1];
+        arr[j]=tmp;
+    }
+}
+```
+
+---
+
+### 算法分析
+
+插入排序的平均情形也是O(N^2)。
+
+插入排序的运行时间是O(I+N)，其中I为原始数组中的逆序数。
+
+定理：
+
+N个互异数的数组的平均逆序数是N(N-1)/4。
+
+## 希尔排序（缩小增量排序）
+
+### 算法实现（使用希尔增量为例）
+
+```c++
+void ShellSort(int A[],int N)
+{
+    int i,j,Increment;
+    int tmp;
+    for(Increment=N/2;Increment>0;Increment/=2)
+    	for{i=Increment;i<N;i++}
+    {
+        tmp=A[i];
+        for(j=i;j>=Inrement;j-=Increment)
+            if(tmp<A[j-Increment])
+                A[j]=A[j-Increment];
+        	else
+                break;
+        A[j]=tmp;
+    }
+}
+```
+
+### 算法分析
+
+希尔排序的运行时间依赖于增量序列的选择。
+
+希尔排序的递推公式：
+$$
+h_t={n\over2},h_k={h_{k+1}\over2}
+$$
+定理：使用希尔增量时希尔排序的最坏情形运行时间为O(N^2)。
+
+```
+
+```
+
+Hibbard增量序列的递推公式：
+$$
+h_1=1,h_i=2*h_{i-1}+1
+$$
+定理：使用Hibbard增量的希尔排序的最坏情形运行时间为O(N^(3/2))。
