@@ -136,6 +136,162 @@ long long Pow(long long X, unsigned int N)
 
 ## 单链表
 
+```c++
+//LinkList.h
+typedef struct node {
+	int data;
+	node* next;
+}NODE;
+
+class LinkList
+{
+private:
+	NODE* head;
+public:
+	LinkList() { head = nullptr; }
+	~LinkList();
+	int LengthList() const; //长度
+	void InsertList(int,int); //在指定位置后面插入指定值
+	bool IsEmpyt() const; //判断为空
+	int GetElemList(int loc) const; //查找loc处的值
+	void DeleteList(int loc); //删除loc处的结点
+	void AddList(int); //在表头增加结点
+	void ShowList(); //遍历链表
+	void ClearList(); //清空链表
+};
+```
+
+```c++
+//LinkList.cpp
+#include"LinkList.h"
+#include<iostream>
+using std::cout;
+using std::endl;
+
+LinkList::~LinkList()
+{
+	NODE* p = head;
+	while (p)
+	{
+		head = head->next;
+		delete p;
+		p = head;
+	}
+	cout << "析构函数调用" << endl;
+}
+
+int LinkList::LengthList() const
+{
+	int len = 0;
+	NODE* p = head;
+	while (p)
+	{
+		len++;
+		p = p->next;
+	}
+	return len;
+}
+
+void LinkList::InsertList(int x, int loc)
+{
+	NODE* p = new NODE;
+	p->data = x;
+	if (loc > LengthList())
+	{
+		cout << "out of range" << endl;
+		return;
+	}
+	NODE* current = head;
+	while (--loc)
+	{
+		current = current->next;
+	}
+	p->next = current->next;
+	current->next=p;
+}
+
+bool LinkList::IsEmpyt() const
+{
+	return head == nullptr;
+}
+
+int LinkList::GetElemList(int loc) const
+{
+	if (loc > LengthList())
+	{
+		cout << "out of range ";
+		return -1 ;
+	};
+	NODE* p = head;
+	while (--loc)
+	{
+		p = p->next;
+	}
+	return p->data;
+}
+
+void LinkList::DeleteList(int loc)
+{
+	if (loc > LengthList())
+	{
+		cout << "out of range" << endl;
+		return;
+	}
+	if (loc == 1)
+	{
+		NODE* tmp = head;
+		head = head->next;
+		delete tmp;
+		return;
+	}
+	NODE* current = head->next;
+	NODE* prev = head;
+	while (loc - 2 && --loc)
+	{
+		current = current->next;
+		prev = prev->next;
+	}
+	prev->next = current->next;
+	delete current;
+	return;
+}
+
+void LinkList::AddList(int x)
+{
+	NODE* p = new NODE;
+	p->data = x;
+	p->next = head;
+	head = p;
+}
+
+void LinkList::ShowList()
+{
+	NODE* p = head;
+	while (p)
+	{
+		cout << p->data << " ";
+		p = p->next;
+	}
+	cout << endl;
+
+}
+
+void LinkList::ClearList()
+{
+	NODE* p = head;
+	while (p)
+	{
+		head = head->next;
+		delete p;
+		p = head;
+	}
+}
+```
+
+## 双链表
+
+## 循环链表
+
 # 第七章 排序
 
 ## 插入排序
