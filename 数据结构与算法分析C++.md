@@ -134,7 +134,9 @@ long long Pow(long long X, unsigned int N)
 
 # 第三章 表、栈、队列
 
-## 单链表
+## 3.1 表
+
+### 单链表
 
 ```c++
 //LinkList.h
@@ -288,9 +290,112 @@ void LinkList::ClearList()
 }
 ```
 
-## 双链表
+### 双链表
 
-## 循环链表
+```c++
+//DoubleLinkList.h
+typedef struct node
+{
+	int elem;
+	Node* front;
+	Node* next;
+}Node;
+
+class DoubleLinkList
+{
+private:
+	Node* head;
+public:
+	DoubleLinkList() { head = nullptr; }
+	~DoubleLinkList();
+	void DeleteList(int loc);
+};
+```
+
+```c++
+//DoubleLinkList.cpp
+#include"DoubleLinkList.h"
+
+DoubleLinkList::~DoubleLinkList()
+{
+	Node* p = head;
+	while (p)
+	{
+		head = head->next;
+		delete p;
+		p = head;
+	}
+}
+
+void DoubleLinkList::DeleteList(int loc)
+{
+	Node* p = head;
+	while (--loc)
+	{
+		p = p->next;
+	}
+	p->front = p->next;
+	delete p;
+}
+```
+
+### 循环链表
+
+### 示例
+
+#### 3.1.1 多项式ADT
+
+```c++
+//Polynomial.h
+#define MaxDegree 1000
+typedef struct polynomial {
+	int CoeffArray[MaxDegree + 1] = { 0, };
+	int HighPower = 0;
+}Polynomial;
+
+Polynomial AddPolynomial(const Polynomial& p1, const Polynomial& p2);
+
+Polynomial MultPolynomial(const Polynomial& p1, const Polynomial& p2);
+```
+
+```c++
+//Polynomial.cpp
+#include<algorithm>
+#include<iostream>
+#include"Polynomial.h"
+
+Polynomial AddPolynomial(const Polynomial& p1, const Polynomial& p2)
+{
+	Polynomial PolySum;
+	PolySum.HighPower = std::max(p1.HighPower, p2.HighPower);
+	for (int i = PolySum.HighPower; i >= 0; i--) PolySum.CoeffArray[i] = p1.CoeffArray[i] + p2.CoeffArray[i];
+	return PolySum;
+}
+
+Polynomial MultPolynomial(const Polynomial& p1, const Polynomial& p2)
+{
+	Polynomial PolyProd;
+	if (PolyProd.HighPower > MaxDegree)
+	{
+		std::cout << "Exceeded array size" << std::endl;
+		exit(-1);
+	}
+	for(int i=0;i<=p1.HighPower;i++)
+		for (int j = 0; j <= p2.HighPower; j++)
+			PolyProd.CoeffArray[i + j] = p1.CoeffArray[i] * p2.CoeffArray[j];
+	return PolyProd;
+}
+```
+
+**练习：使用单链表表示多项式，并且完成两个多项式相乘时所得到的多项式合并同类项操作。**
+
+#### 3.1.2 基数排序
+
+#### 3.1.3 多重表
+
+## 3.2 栈
+
+## 3.3 队列
 
 # 第七章 排序
 
