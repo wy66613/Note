@@ -395,6 +395,96 @@ Polynomial MultPolynomial(const Polynomial& p1, const Polynomial& p2)
 
 ## 3.2 栈
 
+```c++
+//Stack.h
+struct Node;
+
+class Stack
+{
+private:
+	Node* head;
+public:
+	Stack() { head = nullptr; }
+	~Stack();
+	bool IsEmpty();
+	void Push(int);
+	void Pop();
+	int Top();
+	void ClearStack();
+};
+
+struct Node
+{
+	int data;
+	Node* next;
+};
+```
+
+```c++
+//Stack.cpp
+#include<iostream>
+#include"Stack.h"
+
+Stack::~Stack()
+{
+	Node* p = head;
+	while (p)
+	{
+		head = head->next;
+		delete p;
+		p = head;
+	}
+}
+
+bool Stack::IsEmpty()
+{
+	return head == nullptr;
+}
+
+void Stack::Push(int x)
+{
+	Node* p = new Node;
+	p->data = x;
+	p->next = head;
+	head = p;
+}
+
+void Stack::Pop()
+{
+	if (IsEmpty())
+	{
+		std::cout << "栈顶为空 ";
+		exit(-1);
+	}
+	Node* p = head;
+	head = head->next;
+	delete p;
+}
+
+int Stack::Top()
+{
+	if (IsEmpty())
+	{
+		std::cout << "栈顶为空 ";
+		exit(-1);
+	}
+	return head->data;
+}
+
+void Stack::ClearStack()
+{
+	Node* p = head;
+	while (p)
+	{
+		head = head->next;
+		delete p;
+		p = head;
+	}
+}
+```
+
+除非在错误处理及其重要的场合，一般在栈例程中省去错误检测。但是，如果一个程序的主要运行时间很少花在错误检测上，这意味着忽略错误检测一般是不妥的，如果它们冗长，那么当它们确实耗费太长时间时可以去掉。
+
 ## 3.3 队列
 
 # 第七章 排序
