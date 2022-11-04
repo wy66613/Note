@@ -153,13 +153,13 @@ typedef struct node {
 	node* next;
 }Node,*LinkList;
 
-LinkList ListHeadInsert(LinkList&);
-LinkList ListTailInsert(LinkList&);
-Node* GetElem(LinkList, int);
-Node* LocateElem(LinkList, int);
-void FrontInsert(LinkList, int, int);
-void DeleteElem(LinkList, int);
-int GetLength(LinkList);
+LinkList ListHeadInsert(LinkList&); //头插法
+LinkList ListTailInsert(LinkList&); //尾插法
+Node* GetElem(LinkList, int); //根据位置获取元素
+Node* LocateElem(LinkList, int); //根据元素定位位置
+void FrontInsert(LinkList, int, int); //前插
+void DeleteElem(LinkList, int); //删除
+int GetLength(LinkList); //获取链表长度
 ```
 
 ```c++
@@ -263,24 +263,24 @@ $$
 ### 顺序栈
 
 ```c++
-//Stack.h
+//SqStack.h
 #define MaxSize 50
 typedef struct {
 	int data[MaxSize];
 	int top;
 } SqStack;
 
-void InitStack(SqStack&);
-bool StackEmpty(SqStack);
-void Push(SqStack&, int);
-void Pop(SqStack&);
-int GetTop(SqStack&);
-void DestroyStack(SqStack&);
+void InitStack(SqStack&); //初始化栈
+bool StackEmpty(SqStack); //判断栈是否为空
+void Push(SqStack&, int); //进栈
+void Pop(SqStack&); //出栈
+int GetTop(SqStack&); //获取栈顶元素
+void DestroyStack(SqStack&); //释放栈
 ```
 
 ```c++
-//Stack.cpp
-#include"Stack.h"
+//SqStack.cpp
+#include"SqStack.h"
 
 void InitStack(SqStack& S)
 {
@@ -333,7 +333,15 @@ typedef struct LinkNode{
 } *LinkStack;
 ```
 
+## 3.3 队列
 
+### 队列的顺序存储
+
+顺序存储存在“假溢出”的情况，会造成空间浪费。
+
+### 循环队列
+
+针对顺序存储“假溢出”的情况，在逻辑上将存储队列元素的表视为一个环。当队首指针**Q.front==MaxSize-1**后，再前进一个位置就自动到0，这可以利用取余来实现。
 
 # 第七章 排序
 
