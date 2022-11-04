@@ -1,6 +1,6 @@
 # 第二章 算法分析
 
-## 最大连续子列和
+## 2.1 最大连续子列和
 
 ```c++
 int MaxSubSequenceSum1(const int arr[], int n)
@@ -79,7 +79,7 @@ int MaxSubSequenceSum3(const int arr[], int n)
 }
 ```
 
-## 对分查找
+## 2.2 对分查找
 
 ```c++
 int BinarySearch(const int arr[], int x, int n)
@@ -100,7 +100,7 @@ int BinarySearch(const int arr[], int x, int n)
 }
 ```
 
-## 欧几里德算法
+## 2.3 欧几里德算法
 
 ```c++
 unsigned int Gcd(unsigned int M, unsigned N)
@@ -116,7 +116,7 @@ unsigned int Gcd(unsigned int M, unsigned N)
 }
 ```
 
-## 高效率的取幂运算
+## 2.4 高效率的取幂运算
 
 ```c++
 long long Pow(long long X, unsigned int N)
@@ -132,11 +132,212 @@ long long Pow(long long X, unsigned int N)
 }
 ```
 
+
+
 # 第三章 表、栈、队列
+
+## 3.1 线性表
+
+线性表是一个逻辑结构，有两种存储结构——顺序存储和链式存储
+
+### 链表
+
+#### 单链表
+
+相较于顺序表，链式存储线性表时不需要使用地址连续的存储单元。即不要求逻辑上相邻的元素在物理位置上也相邻。插入和删除操作不需要移动元素，只需要修改指针，但也会失去顺序表随机存储的优点。
+
+```c++
+//LinkList.h
+typedef struct node {
+	int data;
+	node* next;
+}Node,*LinkList;
+
+LinkList ListHeadInsert(LinkList&);
+LinkList ListTailInsert(LinkList&);
+Node* GetElem(LinkList, int);
+Node* LocateElem(LinkList, int);
+void FrontInsert(LinkList, int, int);
+void DeleteElem(LinkList, int);
+int GetLength(LinkList);
+```
+
+```c++
+//LinkList.cpp
+#include<iostream>
+#include"ListLink.h"
+
+LinkList ListHeadInsert(LinkList& L)
+{
+	Node* p;
+	int x;
+	L = new Node; //创建头节点
+	L->next = nullptr;
+	std::cin >> x;
+	while (std::cin)
+	{
+		p = new Node;
+		p->data = x;
+		p->next = L->next;
+		L->next = p;
+		std::cin >> x;
+	}
+	return L;
+}
+
+LinkList ListTailInsert(LinkList& L)
+{
+	int x;
+	L = new Node;
+	L->next = nullptr;
+	Node* s = L;
+	while (std::cin >> x)
+	{
+		Node* p = new Node;
+		p->data = x;
+		s->next = p;
+		s = p;
+	}
+	return L;
+}
+
+Node* GetElem(LinkList L, int i)
+{
+	int j = 1;
+	Node* p = L->next;
+	if (i == 0) return L;
+	if (i < 0) return nullptr;
+	while (p && j++ < i)
+	{
+		p = p->next;
+	}
+	return p;
+}
+
+Node* LocateElem(LinkList L, int x)
+{
+	Node* p = L->next;
+	while (p && p->data != x)
+	{
+		p = p->next;
+	}
+	return p;
+}
+
+void FrontInsert(LinkList L, int x, int i)
+{
+	Node* s = new Node;
+	s->data = x;
+	Node* front = GetElem(L, i - 1);
+	s->next = front->next;
+	front->next = s;
+}
+
+void DeleteElem(LinkList L, int i)
+{
+	if (i == 0) return;
+	if (!GetElem(L, i)) return;
+	Node* p = GetElem(L, i - 1);
+	Node* q = GetElem(L, i);
+	p->next = q->next;
+	delete q;
+}
+
+int GetLength(LinkList L)
+{
+	int num = 0;
+	Node* p = L->next;
+	while (p&&++num) p = p->next;
+	return num;
+}
+```
+
+## 3.2 栈
+
+栈的数学性质：n个不同的元素进栈，出栈元素不同排列的个数为
+$$
+{1\over{n+1}}{C^n_{2n}}
+$$
+上述公式称为卡特兰（Catalan）数。
+
+### 顺序栈
+
+```c++
+//Stack.h
+#define MaxSize 50
+typedef struct {
+	int data[MaxSize];
+	int top;
+} SqStack;
+
+void InitStack(SqStack&);
+bool StackEmpty(SqStack);
+void Push(SqStack&, int);
+void Pop(SqStack&);
+int GetTop(SqStack&);
+void DestroyStack(SqStack&);
+```
+
+```c++
+//Stack.cpp
+#include"Stack.h"
+
+void InitStack(SqStack& S)
+{
+	S.top = -1;
+}
+
+bool StackEmpty(SqStack& S)
+{
+	if (S.top == -1) return true;
+	else return false;
+}
+
+void Push(SqStack& S, int x)
+{
+	if (S.top == MaxSize - 1) return;
+	S.data[++S.top] = x;
+}
+
+void Pop(SqStack& S)
+{
+	if (StackEmpty(S)) return;
+	S.top--;
+}
+
+int GetTop(SqStack& S)
+{
+	return S.data[S.top];
+}
+
+void DestroyStack(SqStack& S)
+{
+	S.top = -1;
+}
+```
+
+### 共享栈
+
+利用栈底位置相对不变的特性，让两个顺序栈共享一个一维数组空间，将两个栈的栈底分别设置在共享空间的两端，两个栈顶向共享空间的中间延申。
+
+### 链栈（栈的链式存储结构）
+
+**优点**：便于多个栈共享存储空间和提高效率，且不存在栈满的情况，通常用单链表实现，并规定所有操作都是在单链表的表头进行。
+
+栈的链式存储结构可描述为：
+
+```c++
+typedef struct LinkNode{
+    ElemType data;
+    struct LinkNode* next;
+} *LinkStack;
+```
+
+
 
 # 第七章 排序
 
-## 插入排序
+## 7.1 插入排序
 
 ### 算法实现
 
@@ -166,7 +367,7 @@ void InsertSort(int arr[],int n)
 
 N个互异数的数组的平均逆序数是N(N-1)/4。
 
-## 希尔排序（缩小增量排序）
+## 7.2 希尔排序（缩小增量排序）
 
 ### 算法实现（使用希尔增量为例）
 
