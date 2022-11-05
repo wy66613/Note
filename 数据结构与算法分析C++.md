@@ -138,13 +138,17 @@ long long Pow(long long X, unsigned int N)
 
 ## 3.1 线性表
 
-线性表是一个逻辑结构，有两种存储结构——顺序存储和链式存储
+线性表是一个逻辑结构，有两种存储结构——顺序存储和链式存储。
+
+---
 
 ### 链表
 
 #### 单链表
 
 相较于顺序表，链式存储线性表时不需要使用地址连续的存储单元。即不要求逻辑上相邻的元素在物理位置上也相邻。插入和删除操作不需要移动元素，只需要修改指针，但也会失去顺序表随机存储的优点。
+
+---
 
 ```c++
 //LinkList.h
@@ -260,6 +264,8 @@ $$
 $$
 上述公式称为卡特兰（Catalan）数。
 
+---
+
 ### 顺序栈
 
 ```c++
@@ -324,6 +330,8 @@ void DestroyStack(SqStack& S)
 
 **优点**：便于多个栈共享存储空间和提高效率，且不存在栈满的情况，通常用单链表实现，并规定所有操作都是在单链表的表头进行。
 
+---
+
 栈的链式存储结构可描述为：
 
 ```c++
@@ -339,9 +347,148 @@ typedef struct LinkNode{
 
 顺序存储存在“假溢出”的情况，会造成空间浪费。
 
-### 循环队列
+#### 循环队列
 
 针对顺序存储“假溢出”的情况，在逻辑上将存储队列元素的表视为一个环。当队首指针**Q.front==MaxSize-1**后，再前进一个位置就自动到0，这可以利用取余来实现。
+
+---
+
+循环队列的判空，**Q.front==Q.rear**，但是无法区分队空还是队满。常用的方法是牺牲一个单元来区分队空和队满，入队时少用一个队列单元，以队头指针在队尾指针的下一位置作为队满的标志。
+
+![循环队列区分队满和队空](img/循环队列区分队满和队空.png)
+
+队满条件：(Q.rear+1)%MaxSize==Q.front
+
+队空条件：Q.front==Q.rear
+
+队列中元素的个数：(Q.rear-Q.front+MaxSize)%MaxSize
+
+类型中增设表示元素个数的数据成员和tag数据成员，tag数据成员用于区分是队满还是队空。若因删除导致Q.front==Q.rear，则为队空；tag=1时，若因插入导致Q.front==Q.rear，则为队满。
+
+---
+
+```c++
+//SqQueue.h
+#define MaxSize 50
+
+typedef struct {
+	int data[MaxSize];
+	int front, rear;
+}SqQueue;
+
+void InitQueue(SqQueue&); //初始化队列
+bool IsEmpty(const SqQueue&); //判断队列是否为空
+void EnQueue(SqQueue&, const int); //进队
+int DeQueue(SqQueue&); //出队，并返回出队元素
+int GetHead(SqQueue&); //获取对头元素
+```
+
+```c++
+//SqQueue.cpp
+#include<iostream>
+#include"SqQueue.h"
+
+void InitQueue(SqQueue& Q)
+{
+	Q.rear = Q.front = 0;
+}
+
+bool IsEmpty(const SqQueue& Q)
+{
+	if (Q.rear == Q.front) return true;
+	return false;
+}
+
+void EnQueue(SqQueue& Q, const int x)
+{
+	if ((Q.rear + 1) % MaxSize == Q.front) return;
+	Q.data[Q.rear] = x;
+	Q.rear = (Q.rear + 1) % MaxSize;
+}
+
+int DeQueue(SqQueue& Q)
+{
+	if (Q.rear == Q.front) return false;
+	int x = Q.data[Q.front];
+	Q.front = (Q.front + 1) % MaxSize;
+	return x;
+}
+
+int GetHead(SqQueue& Q)
+{
+	if (Q.rear == Q.front) std::exit(-1);
+	return Q.data[Q.front];
+}
+```
+
+### 队列的链式存储
+
+实质是一个同时带有队头指针和队尾指针的单链表。头指针指向队头结点，尾指针指向队尾结点。
+
+链式存储结构可描述为：
+
+```c++
+//LinkQueue.h
+typedef struct LinkNode { //链式队列结点
+	int data;
+	struct LinkNode* next;
+}LinkNode;
+
+typedef struct { //链式队列，头出尾进
+	LinkNode* front, * rear;
+}LinkQueue;
+```
+
+---
+
+通常将链式队列设计成一个带头结点的单链表，这样进队和出队的操作就统一了。另外，假如要使用多个队列最好使用链式队列。
+
+---
+
+```c++
+//LinkQueue.h
+void InitQueue(LinkQueue&); //队列初始化
+bool IsEmpty(LinkQueue&); //判空
+void EnQueue(LinkQueue&, int); //进队
+bool DeQueue(LinkQueue&, int&); //出队，并返回出队元素
+```
+
+```c++
+//LinkQueue.cpp
+#include"LinkQueue.h"
+void InitQueue(LinkQueue& Q)
+{
+	Q.front = Q.rear = new LinkNode;
+	Q.front->next = nullptr;
+}
+
+bool IsEmpty(LinkQueue& Q)
+{
+	if (Q.front == Q.rear) return true;
+	return false;
+}
+
+void EnQueue(LinkQueue& Q, int x)
+{
+	LinkNode* p = new LinkNode;
+	p->data = x;
+	Q.rear->next = p;
+	Q.rear = p;
+}
+
+bool DeQueue(LinkQueue& Q, int& x)
+{
+	if (Q.front == Q.rear) return false;
+	LinkNode* p = Q.front->next;
+	x = p->data;
+	Q.front->next = p->next;
+	if (Q.rear == p) Q.rear = Q.front;
+	delete p;
+	return true;
+}
+```
+
+
 
 # 第七章 排序
 
