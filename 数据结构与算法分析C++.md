@@ -1,6 +1,6 @@
-# 第二章 算法分析
+# 算法分析
 
-## 2.1 最大连续子列和
+## 最大连续子列和
 
 ```c++
 int MaxSubSequenceSum1(const int arr[], int n)
@@ -79,7 +79,7 @@ int MaxSubSequenceSum3(const int arr[], int n)
 }
 ```
 
-## 2.2 对分查找
+## 对分查找
 
 ```c++
 int BinarySearch(const int arr[], int x, int n)
@@ -100,7 +100,13 @@ int BinarySearch(const int arr[], int x, int n)
 }
 ```
 
-## 2.3 欧几里德算法
+- 二分法的详解与扩展
+
+1. 在一个有序数组种，找某个数是否存在
+2. 在一个有序数组中，找大于等于某个数最左侧的位置
+3. 局部最小值问题
+
+## 欧几里德算法
 
 ```c++
 unsigned int Gcd(unsigned int M, unsigned N)
@@ -116,7 +122,7 @@ unsigned int Gcd(unsigned int M, unsigned N)
 }
 ```
 
-## 2.4 高效率的取幂运算
+## 高效率的取幂运算
 
 ```c++
 long long Pow(long long X, unsigned int N)
@@ -142,7 +148,7 @@ long long Pow(long long X, unsigned int N)
 
 ---
 
-### 链表
+### 3.1.1 链表
 
 #### 单链表
 
@@ -262,11 +268,11 @@ int GetLength(LinkList L)
 $$
 {1\over{n+1}}{C^n_{2n}}
 $$
-上述公式称为卡特兰（Catalan）数。
+上述公式称为卡特兰（**Catalan**）数。
 
 ---
 
-### 顺序栈
+### 3.2.1 顺序栈
 
 ```c++
 //SqStack.h
@@ -322,11 +328,11 @@ void DestroyStack(SqStack& S)
 }
 ```
 
-### 共享栈
+### 3.2.2 共享栈
 
 利用栈底位置相对不变的特性，让两个顺序栈共享一个一维数组空间，将两个栈的栈底分别设置在共享空间的两端，两个栈顶向共享空间的中间延申。
 
-### 链栈（栈的链式存储结构）
+### 3.2.3 链栈（栈的链式存储结构）
 
 **优点**：便于多个栈共享存储空间和提高效率，且不存在栈满的情况，通常用单链表实现，并规定所有操作都是在单链表的表头进行。
 
@@ -343,7 +349,7 @@ typedef struct LinkNode{
 
 ## 3.3 队列
 
-### 队列的顺序存储
+### 3.3.1 队列的顺序存储
 
 顺序存储存在“假溢出”的情况，会造成空间浪费。
 
@@ -421,7 +427,7 @@ int GetHead(SqQueue& Q)
 }
 ```
 
-### 队列的链式存储
+### 3.3.2 队列的链式存储
 
 实质是一个同时带有队头指针和队尾指针的单链表。头指针指向队头结点，尾指针指向队尾结点。
 
@@ -488,25 +494,72 @@ bool DeQueue(LinkQueue& Q, int& x)
 }
 ```
 
+## 3.4 栈和队列的应用
 
 
-# 第七章 排序
 
-## 7.1 插入排序
+## 3.5特殊矩阵
+
+特殊矩阵的压缩存储方法：找出特殊矩阵中值相同的矩阵元素的分布规律，把那些呈现规律性分布的、值相同的多个矩阵元素压缩存储到一个存储空间中。
+
+---
+
+### 3.5.1 对称矩阵
+
+元素下标之间的对应关系：
+$$
+下三角区和主对角线:k={i(i-1)\over2}+j-1
+$$
+
+$$
+上三角区：k={j(j-1)\over2}+i-1
+$$
+
+### 3.5.2 三角矩阵
+
+下三角矩阵元素下标之间的对应关系：
+$$
+下三角区和主对角线：k={i(i-1)\over2}+j-1
+$$
+
+$$
+上三角区：{k=n(n+1)\over2}
+$$
+
+上三角矩阵元素下标之间的对应关系：
+$$
+上三角区和主对角线：k={(i-1)(2n-i+2)\over2}+(j-i)
+$$
+
+$$
+下三角区：k={n(n+1)\over2}
+$$
+
+### 3.5.3 三对角矩阵
+
+
+
+# 排序
+
+## 插入排序
 
 ### 算法实现
 
 ```c++
-void InsertSort(int arr[],int n)
+void InsertSort(int* arr,int n)
 {
     int j,p;
     int tmp;
     for(p=1;p<n;p++)
-    {
-        tmp=arr[p];
-        for(j=p;j>0&&arr[j-1]>tmp;j--) arr[j]=arr[j-1];
-        arr[j]=tmp;
-    }
+        for(j=p;j>0&&arr[j-1]>arr[j];j--)
+            swap(arr, j, j-1); 
+}
+
+void swap(int* arr, int i, int j)
+{
+	int temp = arr[i];
+	arr[i] = arr[j];
+	arr[j] = temp;
 }
 ```
 
@@ -514,15 +567,11 @@ void InsertSort(int arr[],int n)
 
 ### 算法分析
 
-插入排序的平均情形也是O(N^2)。
+时间复杂度为O(N^2)，只考虑最坏情况。但在某些情况下，插入排序是优于冒泡排序的。
 
-插入排序的运行时间是O(I+N)，其中I为原始数组中的逆序数。
 
-定理：
 
-N个互异数的数组的平均逆序数是N(N-1)/4。
-
-## 7.2 希尔排序（缩小增量排序）
+## 希尔排序（缩小增量排序）
 
 ### 算法实现（使用希尔增量为例）
 
@@ -564,3 +613,119 @@ $$
 h_1=1,h_i=2*h_{i-1}+1
 $$
 定理：使用Hibbard增量的希尔排序的最坏情形运行时间为O(N^(3/2))。
+
+
+
+## 选择排序
+
+### 算法实现
+
+```c++
+int* SelectSort(int* arr, int n)
+{
+	for (int i = 0; i < n - 1; i++)
+	{
+		int minIndex = i;
+		for (int j = i + 1; j < n; j++)
+			minIndex = arr[minIndex] < arr[j] ? minIndex : j;
+		swap(arr, minIndex, i);
+	}
+	return arr;
+}
+
+void swap(int* arr, int i, int j)
+{
+	int temp = arr[i];
+	arr[i] = arr[j];
+	arr[j] = temp;
+}
+```
+
+### 算法分析
+
+因为额外开辟了一个i和j，以及一个minIndex，minIndex每次for循环结束释放，再进入for循环时重新开辟，所以额外空间复杂度为*O(1)*
+
+
+
+## 冒泡排序
+
+### 算法实现
+
+```c++
+int* BubbleSort(int* arr, int n)
+{
+	for (int e = n - 1; e > 0; e--)
+	{
+		for (int i = 0; i < e; i++)
+			if (arr[i] > arr[i + 1]) swap(arr, i, i + 1);
+	}
+	return arr;
+}
+
+void swap(int* arr, int i, int j)
+{
+	int temp = arr[i];
+	arr[i] = arr[j];
+	arr[j] = temp;
+}
+
+//使用异或进行交换，交换的两个必须是独立的内存空间，在数组中即i位置不能等于j位置
+void swap2(int*arr, int i,int j)
+{
+    arr[i] = arr[i]^arr[j];
+    arr[j] = arr[i]^arr[j];
+    arr[i] = arr[i]^arr[j];
+}
+```
+
+### 算法分析
+
+时间复杂度依然为O(N^2)
+
+
+
+# 位运算
+
+## 异或
+
+面试题例：
+
+1. 一个数组中某个数字出现了奇数次，其他数字出现了偶数次，求出现了奇数次的数字
+2. 一个数组中某两个数字出现了奇数次，其他数字出现了偶数次，求出现了奇数次的数字
+
+---
+
+```c++
+//1.
+int func(int* arr, int n)
+{
+	int eor = 0;
+	for (int i = 0; i < n; i++)
+		eor ^= arr[i];
+	return eor;
+}
+```
+
+```c++
+//2.
+void func(int* arr, int n)
+{
+	int eor = 0;
+	for (int i = 0; i < n; i++)
+		eor ^= arr[i]; //a^b
+	int rightone = eor & (~eor + 1); //最右边的1
+	int onlyone = 0; //eor' = a or b
+	for (int i = 0; i < n; i++)
+		if ((arr[i] & onlyone) == 1) onlyone ^= arr[i];
+	cout << "one number = " << onlyone + 1 << endl;
+	cout << "another number = " << (onlyone ^ eor) + 1 << endl; ;
+}
+```
+
+- 注：提取出某个不为0的数最右边的1：
+
+```c++
+int rightone = eor & (~eor + 1);
+```
+
+---
