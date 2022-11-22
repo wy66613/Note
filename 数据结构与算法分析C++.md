@@ -1,4 +1,225 @@
-# 算法分析
+# 排序
+
+## 插入排序
+
+### 算法实现
+
+```c++
+void InsertSort(int* arr,int n)
+{
+    int j,p;
+    int tmp;
+    for(p=1;p<n;p++)
+        for(j=p;j>0&&arr[j-1]>arr[j];j--)
+            swap(arr, j, j-1); 
+}
+
+void swap(int* arr, int i, int j)
+{
+	int temp = arr[i];
+	arr[i] = arr[j];
+	arr[j] = temp;
+}
+```
+
+
+
+### 算法分析
+
+时间复杂度为O(N^2)，只考虑最坏情况。但在某些情况下，插入排序是优于冒泡排序的。
+
+
+
+## 希尔排序
+
+### 算法实现（使用希尔增量为例）
+
+```c++
+void ShellSort(int A[],int N)
+{
+    int i,j,Increment;
+    int tmp;
+    for(Increment=N/2;Increment>0;Increment/=2)
+    	for{i=Increment;i<N;i++}
+    {
+        tmp=A[i];
+        for(j=i;j>=Inrement;j-=Increment)
+            if(tmp<A[j-Increment])
+                A[j]=A[j-Increment];
+        	else
+                break;
+        A[j]=tmp;
+    }
+}
+```
+
+
+
+### 算法分析
+
+希尔排序的运行时间依赖于增量序列的选择。
+
+希尔排序的递推公式：
+$$
+h_t={n\over2},h_k={h_{k+1}\over2}
+$$
+定理：使用希尔增量时希尔排序的最坏情形运行时间为O(N^2)。
+
+```
+
+```
+
+Hibbard增量序列的递推公式：
+$$
+h_1=1,h_i=2*h_{i-1}+1
+$$
+定理：使用Hibbard增量的希尔排序的最坏情形运行时间为O(N^(3/2))。
+
+
+
+## 选择排序
+
+### 算法实现
+
+```c++
+int* SelectSort(int* arr, int n)
+{
+	for (int i = 0; i < n - 1; i++)
+	{
+		int minIndex = i;
+		for (int j = i + 1; j < n; j++)
+			minIndex = arr[minIndex] < arr[j] ? minIndex : j;
+		swap(arr, minIndex, i);
+	}
+	return arr;
+}
+
+void swap(int* arr, int i, int j)
+{
+	int temp = arr[i];
+	arr[i] = arr[j];
+	arr[j] = temp;
+}
+```
+
+
+
+### 算法分析
+
+因为额外开辟了一个i和j，以及一个minIndex，minIndex每次for循环结束释放，再进入for循环时重新开辟，所以额外空间复杂度为*O(1)*
+
+
+
+## 冒泡排序
+
+### 算法实现
+
+```c++
+int* BubbleSort(int* arr, int n)
+{
+	for (int e = n - 1; e > 0; e--)
+	{
+		for (int i = 0; i < e; i++)
+			if (arr[i] > arr[i + 1]) swap(arr, i, i + 1);
+	}
+	return arr;
+}
+
+void swap(int* arr, int i, int j)
+{
+	int temp = arr[i];
+	arr[i] = arr[j];
+	arr[j] = temp;
+}
+
+//使用异或进行交换，交换的两个必须是独立的内存空间，在数组中即i位置不能等于j位置
+void swap2(int*arr, int i,int j)
+{
+    arr[i] = arr[i]^arr[j];
+    arr[j] = arr[i]^arr[j];
+    arr[i] = arr[i]^arr[j];
+}
+```
+
+
+
+## 快速排序
+
+### 算法实现
+
+```c++
+void QuickSort(int* arr, int l, int r)
+{
+	if (l == r) return;
+	int x = arr[l], i = l - 1, j = r + 1;
+	while (i < j)
+	{
+		do i++; while (arr[i] < x);
+		do j--; while (arr[j] > x);
+		if (i < j) swap(arr[i], arr[j]);
+	}
+	QuickSort(arr, l, j);
+	QuickSort(arr, j + 1, r);
+}
+```
+
+
+
+## 归并排序
+
+### 算法实现
+
+```c++
+void MergeSort(int* arr, int l, int r)
+{
+	if (l == r) return;
+	int mid = (r + l) / 2;
+	MergeSort(arr, l, mid), MergeSort(arr, mid + 1, r);
+
+	int k = 0, i = l, j = mid + 1, tmp[10000];
+	while (i <= mid && j <= r)
+		if (arr[i] <= arr[j]) tmp[k++] = arr[i++];
+		else tmp[k++] = arr[j++];
+	while (i <= mid) tmp[k++] = arr[i++];
+	while (j <= r) tmp[k++] = arr[j++];
+	
+	for (i = l, j = 0; i <= r; i++, j++) arr[i] = tmp[j];
+}	
+```
+
+
+
+# 二分
+
+## 整数二分模板
+
+```c++
+//区间[l, r]被划分成[l, mid]和[mid + 1, r]时使用
+int bsearch_1(int l, int r)
+{
+    while(l < r)
+    {
+        int mid = ( l + r ) / 2;
+        if (check(mid)) r = mid;
+        else l = mid + 1;
+    }
+    return l;
+}
+
+//区间[1, r]被分成[1, mid - 1]和[mid, r]
+int bsearch_2(int l, int r)
+{
+    while(l < r)
+    {
+        int mid = (1 + r + l)/2;
+        if(check(mid)) l = mid;
+        else r = mid - 1;
+    }
+    return l;
+}
+```
+
+
 
 ## 最大连续子列和
 
@@ -538,149 +759,6 @@ $$
 ### 3.5.3 三对角矩阵
 
 
-
-# 排序
-
-## 插入排序
-
-### 算法实现
-
-```c++
-void InsertSort(int* arr,int n)
-{
-    int j,p;
-    int tmp;
-    for(p=1;p<n;p++)
-        for(j=p;j>0&&arr[j-1]>arr[j];j--)
-            swap(arr, j, j-1); 
-}
-
-void swap(int* arr, int i, int j)
-{
-	int temp = arr[i];
-	arr[i] = arr[j];
-	arr[j] = temp;
-}
-```
-
----
-
-### 算法分析
-
-时间复杂度为O(N^2)，只考虑最坏情况。但在某些情况下，插入排序是优于冒泡排序的。
-
-
-
-## 希尔排序（缩小增量排序）
-
-### 算法实现（使用希尔增量为例）
-
-```c++
-void ShellSort(int A[],int N)
-{
-    int i,j,Increment;
-    int tmp;
-    for(Increment=N/2;Increment>0;Increment/=2)
-    	for{i=Increment;i<N;i++}
-    {
-        tmp=A[i];
-        for(j=i;j>=Inrement;j-=Increment)
-            if(tmp<A[j-Increment])
-                A[j]=A[j-Increment];
-        	else
-                break;
-        A[j]=tmp;
-    }
-}
-```
-
-### 算法分析
-
-希尔排序的运行时间依赖于增量序列的选择。
-
-希尔排序的递推公式：
-$$
-h_t={n\over2},h_k={h_{k+1}\over2}
-$$
-定理：使用希尔增量时希尔排序的最坏情形运行时间为O(N^2)。
-
-```
-
-```
-
-Hibbard增量序列的递推公式：
-$$
-h_1=1,h_i=2*h_{i-1}+1
-$$
-定理：使用Hibbard增量的希尔排序的最坏情形运行时间为O(N^(3/2))。
-
-
-
-## 选择排序
-
-### 算法实现
-
-```c++
-int* SelectSort(int* arr, int n)
-{
-	for (int i = 0; i < n - 1; i++)
-	{
-		int minIndex = i;
-		for (int j = i + 1; j < n; j++)
-			minIndex = arr[minIndex] < arr[j] ? minIndex : j;
-		swap(arr, minIndex, i);
-	}
-	return arr;
-}
-
-void swap(int* arr, int i, int j)
-{
-	int temp = arr[i];
-	arr[i] = arr[j];
-	arr[j] = temp;
-}
-```
-
-### 算法分析
-
-因为额外开辟了一个i和j，以及一个minIndex，minIndex每次for循环结束释放，再进入for循环时重新开辟，所以额外空间复杂度为*O(1)*
-
-
-
-## 冒泡排序
-
-### 算法实现
-
-```c++
-int* BubbleSort(int* arr, int n)
-{
-	for (int e = n - 1; e > 0; e--)
-	{
-		for (int i = 0; i < e; i++)
-			if (arr[i] > arr[i + 1]) swap(arr, i, i + 1);
-	}
-	return arr;
-}
-
-void swap(int* arr, int i, int j)
-{
-	int temp = arr[i];
-	arr[i] = arr[j];
-	arr[j] = temp;
-}
-
-//使用异或进行交换，交换的两个必须是独立的内存空间，在数组中即i位置不能等于j位置
-void swap2(int*arr, int i,int j)
-{
-    arr[i] = arr[i]^arr[j];
-    arr[j] = arr[i]^arr[j];
-    arr[i] = arr[i]^arr[j];
-}
-```
-
-### 算法分析
-
-时间复杂度依然为O(N^2)
 
 
 
