@@ -112,8 +112,6 @@ void swap(int* arr, int i, int j)
 
 ## 冒泡排序
 
-### 算法实现
-
 ```c++
 int* BubbleSort(int* arr, int n)
 {
@@ -145,8 +143,6 @@ void swap2(int*arr, int i,int j)
 
 ## 快速排序
 
-### 算法实现
-
 ```c++
 void QuickSort(int* arr, int l, int r)
 {
@@ -167,8 +163,6 @@ void QuickSort(int* arr, int l, int r)
 
 ## 归并排序
 
-### 算法实现
-
 ```c++
 void MergeSort(int* arr, int l, int r)
 {
@@ -180,6 +174,7 @@ void MergeSort(int* arr, int l, int r)
 	while (i <= mid && j <= r)
 		if (arr[i] <= arr[j]) tmp[k++] = arr[i++];
 		else tmp[k++] = arr[j++];
+    
 	while (i <= mid) tmp[k++] = arr[i++];
 	while (j <= r) tmp[k++] = arr[j++];
 	
@@ -285,7 +280,8 @@ bool cmp(vector<int>& A,vector<int>& B)
 vector<int> sub(vector<int>& A,vector<int>& B)
 {
 	vector<int> C;
-	for(int i=0,t=0;i<A.size();i++)
+    int t=0; // 借位
+	for(int i=0;i<A.size();i++)
 	{
 		t=A[i]-t;
 		if(i<B.size()) t-=B[i];
@@ -412,6 +408,210 @@ int main()
 	return 0;
 }
 ```
+
+
+
+# 前缀和与差分
+
+## 前缀和
+
+### 一维前缀和
+
+- 公式
+  $$
+  S_{[l,r]}=S_l-S_{[r-1]}
+  $$
+
+```c++
+#include<iostream>
+
+using namespace std;
+
+const int N=100010;
+
+int n,m;
+int a[N],s[N]; // 全局定义的数组初始化为0 
+
+int main()
+{
+	scanf("%d%d",&n,&m);
+	for(int i=1;i<=n;i++) scanf("%d",&a[i]);
+	
+	for(int i=1;i<=n;i++) s[i]=s[i-1]+a[i]; // 前缀和的初始化
+	
+	while(m--)
+	{
+		int l,r;
+		scanf("%d%d",&l,&r);
+		printf("%d\n",s[r]-s[l-1]); // 区间和的计算
+	}
+	
+	return 0;
+}
+```
+
+
+
+### 二维前缀和
+
+- 公式
+
+$$
+s_{[i,j]}=s_{[i,j-1]}+s_{[i-1,j]}-s_{[i-1,j-1]}+a_{[i,j]}
+$$
+
+- 某一矩形区域内的和，左上角为[x1,y1]，右上角为[x2,y2]
+
+$$
+s_{[x2,y2]}-s_{[x1-1,y2]}-s_{[x2,y1-1]}+s_{[x1-1,y1-1]}
+$$
+
+```c++
+#include<iostream>
+using namespace std;
+
+const int N=1010;
+
+int n,m,q;
+int a[N][N],s[N][N];
+
+
+int main()
+{
+	scanf("%d%d%d",&n,&m,&q);
+	for(int i=1;i<=n;i++)
+		for(int j=1;j<=m;j++)
+			scanf("%d",&a[i][j]);
+			
+	for(int i=1;i<=n;i++)
+		for(int j=1;j<=m;j++)
+			s[i][j]=s[i-1][j]+s[i][j-1]-s[i-1][j-1]+a[i][j]; // 前缀和
+			
+	while(q--)
+	{
+		int x1,y1,x2,y2;
+		scanf("%d%d%d%d",&x1,&y1,&x2,&y2);
+		printf("%d\n",s[x2][y2]-s[x1-1][y2]-s[x2][y1-1]+s[x1-1][y1-1]); //某个矩形范围内的和
+	}
+	return 0;
+}
+```
+
+
+
+## 差分
+
+### 一维数组
+
+```c++
+#include<iostream>
+
+using namespace std;
+
+const int N=100010;
+int n,m;
+int s[N],b[N];
+
+void insert(int l,int r,int c)
+{
+	b[l]+=c;
+	b[r+1]-=c;
+}
+
+int main()
+{
+	scanf("%d%d",&n,&m);
+	for(int i=1;i<=n;i++) scanf("%d",&s[i]); // 构造前缀和数组 
+	
+	for(int i=1;i<=n;i++) insert(i,i,s[i]); //  构造差分数组 
+	
+	while(m--)
+	{
+		int l,r,c;
+		scanf("%d%d%d",&l,&r,&c);
+		insert(l,r,c);
+	}
+	
+	for(int i=1;i<=n;i++) b[i]+=b[i-1]; // 将差分数组改为前缀和数组 
+	
+	for(int i=1;i<=n;i++) printf("%d ",b[i]); 
+	
+	return 0;
+}
+```
+
+### 差分矩阵
+
+```c++
+#include<iostream>
+
+using namespace std;
+
+const int N=1010;
+
+int n,m,q;
+int s[N][N],b[N][N];
+
+void insert(int x1,int y1,int x2,int y2,int c)
+{
+	b[x1][y1]+=c;
+	b[x2+1][y1]-=c;
+	b[x1][y2+1]-=c;
+	b[x2+1][y2+1]+=c;
+}
+
+int main()
+{
+	scanf("%d%d%d",&n,&m,&q);
+	
+	for(int i=1;i<=n;i++)
+		for(int j=1;j<=m;j++)
+			scanf("%d",&s[i][j]); // 构造前缀和数组 
+			
+	for(int i=1;i<=n;i++)
+		for(int j=1;j<=m;j++)
+			insert(i,j,i,j,s[i][j]); // 构造差分数组 
+	
+	while(q--)
+	{
+		int x1,y1,x2,y2,c;
+		cin>>x1>>y1>>x2>>y2>>c;
+		insert(x1,y1,x2,y2,c);
+	}
+	
+	for(int i=1;i<=n;i++)
+		for(int j=1;j<=m;j++)
+			b[i][j]+=b[i-1][j]+b[i][j-1]-b[i-1][j-1]; // 将差分数组改为前缀和数组
+	
+	for(int i=1;i<=n;i++)
+	{
+		for(int j=1;j<=m;j++) printf("%d ",b[i][j]);
+		printf("\n");
+	}
+	
+	return 0;
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
