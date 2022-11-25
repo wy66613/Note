@@ -858,3 +858,49 @@ int main()
 ```
 
 # 八、区间和并
+
+快速地将有交集的区间合并
+
+```c++
+#include<iostream>
+#include<vector>
+#include<algorithm>
+
+using namespace std;
+
+vector<pair<int,int> > segs;
+
+int main()
+{
+	vector<pair<int,int> > res;
+	
+	int st=-1e9-10,ed=-1e9-10;
+	int n;
+	cin>>n;
+	while(n--)
+	{
+		int l,r;
+		cin>>l>>r;
+		segs.push_back({l,r});
+	}
+	
+	sort(segs.begin(),segs.end());
+	
+	for(auto seg:segs)
+	{
+		if(ed<seg.first) // 该区间不能合并
+		{
+			if(ed!=-1e9-10) res.push_back({st,ed}); // 判断是否是第一个区间
+			st=seg.first,ed=seg.second; // 维护正在遍历的区间
+		}
+		else if(ed<seg.second) ed=seg.second; // 合并正在遍历的区间
+	}
+	
+	res.push_back({st,ed}); // 将最后一次合并完成的区间加入
+	
+	printf("%d",res.size());
+	
+	return 0;
+} 
+```
+
