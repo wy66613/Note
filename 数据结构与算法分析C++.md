@@ -159,6 +159,8 @@ void QuickSort(int* arr, int l, int r)
 }
 ```
 
+
+
 ### 快速选择算法
 
 ```c++
@@ -748,3 +750,111 @@ int main()
 	return 0;
 }
 ```
+
+
+
+# 六、位运算
+
+> 判断n的二进制表示的第k位是几
+
+```c++
+int res = n>>k&1;
+```
+
+
+
+> 返回n的二进制表示中最后一个1
+
+```c++
+/*
+在c++中，一个整数的负数是补码的概念，也就是取反＋！
+即 -x = ~x + 1
+因此 x&-x = x&(~x+1)
+最简单的应用为统计x的二进制表示中1的个数
+*/
+
+int lowbit(int x)
+{
+    return x&-x;
+}
+```
+
+
+
+# 七、离散化
+
+**下面示例中的 `find函数` 是离散化的关键**
+
+```c++
+#include<iostream>
+#include<vector>
+#include<algorithm>
+
+using namespace std;
+
+const int N = 300010; // n次插入和m次查询操作所涉及到的最多的坐标数量
+int n,m; // n次插入和m次查询
+int a[N]; // 存储坐标插入的值
+int s[N]; //数组a的前缀和数组
+vector<int> alls; // 存储n次插入和m次查询设计的坐标，以此来离散化
+vector<pair<int,int> > add, query; // 存储插入和查询操作的数据
+
+int find(int x) // 返回输入坐标x的离散化坐标
+{
+	int l=0,r=alls.size()-1;
+	while(l<r)
+	{
+		int mid=(l+r)/2;
+		if(alls[mid]>=x) r=mid;
+		else l=mid+1;
+	}
+	return r+1;
+}  
+
+int main()
+{
+	scanf("%d%d",&n,&m);
+	for(int i=1;i<=n;i++)
+	{
+		int x,c;
+		scanf("%d%d",&x,&c);
+		add.push_back({x,c});
+		alls.push_back(x);
+	}
+	
+	for(int i=1;i<=m;i++)
+	{
+		int l,r;
+		scanf("%d%d",&l,&r);
+		query.push_back({l,r});
+		alls.push_back(l);
+		alls.push_back(r);
+	}
+	
+	// 排序，去重
+	sort(alls.begin(),alls.end());
+	alls.erase(unique(alls.begin(),alls.end()),alls.end());
+	
+	// 执行前n次插入操作
+	for(auto item : add)
+	{
+		int x=find(item.first);
+		a[x] += item.second;	
+	} 
+	
+	// 前缀和
+	for(int i=1;i<=alls.size();i++) s[i]=s[i-1]+a[i];
+	
+	// 处理后m次查询操作
+	for(auto item : query)
+	{
+		int l=find(item.first);
+		int r=find(item.second);
+		printf("%d\n",s[r]-s[l-1]);
+	} 
+	
+	return 0;
+}
+```
+
+# 八、区间和并
