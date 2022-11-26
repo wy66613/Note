@@ -910,3 +910,259 @@ int main()
 
 # 二、数据结构
 
+## 1、链表
+
+### 单链表
+
+```c++
+#include<iostream>
+
+using namespace std;
+
+const int N=100010;
+
+// head 表示头节点的下标
+// e[i] 表示节点i的值
+// ne[i] 表示节点i的next指针是多少
+// idx 存储当前已经用到了哪个点 
+int head,e[N],ne[N],idx;
+
+// 初始化 
+void init()
+{
+	head=-1;
+	idx=0;
+}
+
+// 将x插到头节点 
+void add_to_head(int x) 
+{
+	e[idx]=x;
+	ne[idx]=head;
+	head=idx;
+	idx++;	
+}
+
+// 将x插入到下标是k的节点的后面 
+void add(int k,int x)
+{
+	e[idx]=x;
+	ne[idx]=ne[k];
+	ne[k]=idx;
+	idx++;
+}
+
+// 将下标是k的节点的后面的节点删掉 
+void remove(int k)
+{
+	ne[k]=ne[ne[k]];
+}
+
+
+int main()
+{
+	// 一系列操作 
+	return 0;
+}
+```
+
+
+
+### 双链表
+
+```c++
+#include<iostream>
+
+using namespace std;
+
+const int N=100010;
+
+int m;
+int e[N],l[N],r[N],idx;
+
+// 初始化
+void init()
+{
+	// 0表示左端点，1表示右端点
+	r[0]=1,l[1]=0;
+	idx=2; 
+}
+
+// 在第k个节点的右边插入x，在第k个节点的左边插入x直接调用 add[l[k],x] 即可 
+void add(int k,int x)
+{
+	e[idx]=x;
+	r[idx]=r[k];
+	l[idx]=k;
+	l[r[k]]=idx;
+	r[k]=idx;
+}
+
+// 删除第k个节点 
+void remove(int k)
+{
+	r[l[k]]=r[k];
+	l[r[k]]=l[k];
+}
+
+int main()
+{
+	// 一系列操作 
+	return 0;
+}
+```
+
+
+
+## 2、栈和队列
+
+### 栈
+
+```c++
+#include<iostream>
+
+using namespace std;
+
+const int N=100010;
+
+// tt为栈顶 
+int stk[N],tt=0;
+
+int main()
+{
+	int m;
+	cin>>m;
+	while(m--)
+	{
+		string op;
+		int x;
+		
+		cin>>op;
+		if(op=="push")
+		{
+			cin>>x;
+			stk[++tt]=x; 
+		}
+		else if(op=="pop") tt--;
+		else if(op=="empty") cout<<(tt?"NO":"YES")<<endl;
+		else cout<<stk[tt]<<endl;
+	}
+	return 0;
+}
+```
+
+
+
+### 队列
+
+```c++
+#include <iostream>
+
+using namespace std;
+
+const int N = 100010;
+
+int m;
+int q[N], hh, tt = -1; 
+
+int main()
+{
+	cin>>m;
+	while(m--)
+	{
+		string op;
+		int x;
+		
+		cin>>op;
+		if(op=="push")
+		{
+			cin>>x;
+			q[++tt]=x;
+		}
+		else if(op=="pop") hh++;
+		else if(op=="empty") cout << (hh<=tt?"NO":"YES") <<endl;
+		else cout<<q[hh]<<endl;
+	}
+	
+	return 0;
+}
+```
+
+
+
+### 单调栈
+
+> 题目：给定一个长度为 N 的整数数列，输出每个数左边第一个比它小的数，如果不存在则输出 −1。
+
+```c++
+#include<iostream>
+
+using namespace std;
+
+const int N=100010;
+
+int n;
+int stk[N],tt;
+
+int main()
+{
+	scanf("%d",&n);
+	
+	for(int i=0;i<n;i++)
+	{
+		int x;
+		scanf("%d",&x);
+		while(tt&&stk[tt]>=x) tt--;
+		if(tt) printf("%d ",stk[tt]);
+		else printf("-1 ");
+		
+		stk[++tt] = x;
+	}
+	
+	return 0;
+}
+```
+
+
+
+### 单调队列
+
+```c++
+#include<iostream>
+
+using namespace std;
+
+const int N=1000010;
+int a[N],q[N],hh,tt=-1;
+
+int main()
+{
+	int n,k;
+	scanf("%d%d",&n,&k);
+	for(int i=0;i<n;i++)
+	{
+		scanf("%d",&a[i]);
+		if(i-k+1>q[hh]) hh++; // 队首出窗口，hh+1
+		while(hh<=tt&&a[i]<=a[q[tt]]) tt--; // 队尾不单调，tt-1，双端队列 
+		q[++tt]=i; // 下标加入到队尾中 
+		if(i+1>=k) printf("%d ",a[q[hh]]);  // 队首要有数据才能输出 
+	}
+	cout<<endl;
+	
+	hh=0,tt=-1;
+	for(int i=0;i<n;i++)
+	{
+		if(i-k+1>q[hh]) hh++;
+		while(hh<=tt&&a[i]>=a[q[tt]]) tt--;
+		q[++tt]=i;
+		if(i+1>=k) printf("%d ",a[q[hh]]);
+	}
+	
+	return 0;
+}
+```
+
+
+
+## 3、KMP
+
