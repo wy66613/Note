@@ -972,7 +972,6 @@ int main()
 
 ```c++
 #include<iostream>
-
 using namespace std;
 
 const int N=100010;
@@ -980,15 +979,12 @@ const int N=100010;
 int m;
 int e[N],l[N],r[N],idx;
 
-// 初始化
 void init()
 {
-	// 0表示左端点，1表示右端点
 	r[0]=1,l[1]=0;
-	idx=2; 
+	idx=2;
 }
 
-// 在第k个节点的右边插入x，在第k个节点的左边插入x直接调用 add[l[k],x] 即可 
 void add(int k,int x)
 {
 	e[idx]=x;
@@ -996,18 +992,53 @@ void add(int k,int x)
 	l[idx]=k;
 	l[r[k]]=idx;
 	r[k]=idx;
+	idx++;
 }
 
-// 删除第k个节点 
 void remove(int k)
 {
-	r[l[k]]=r[k];
 	l[r[k]]=l[k];
+	r[l[k]]=r[k];
 }
 
 int main()
 {
-	// 一系列操作 
+	init();
+	cin>>m;
+	int k,x;
+	string op;
+	while(m--)
+	{
+		cin>>op;
+		if(op=="R")
+		{
+			cin>>x;
+			add(l[1],x);
+		}
+		else if(op=="L")
+		{
+			cin>>x;
+			add(0,x);
+		}
+		else if(op=="D")
+		{
+			cin>>k;
+			remove(k+1);
+		}
+		else if(op=="IL")
+		{
+			cin>>k>>x;
+			add(l[k+1],x);
+		}
+		else
+		{
+			cin>>k>>x;
+			add(k+1,x);
+		}
+	}
+	
+	for(int i = r[0]; i != 1; i = r[i]) printf("%d ",e[i]);
+
 	return 0;
 }
 ```
@@ -1167,41 +1198,425 @@ int main()
 ## 3、KMP
 
 ```c++
+#include <iostream>
+
+using namespace std;
+
+const int N = 1000010;
+char p[N], s[N]; // 用 p 来匹配 s
+// “next” 数组，若第 i 位存储值为 k
+// 说明 p[0...i] 内最长相等前后缀的前缀的最后一位下标为 k
+// 即 p[0...k] == p[i-k...i]
+int ne[N]; 
+int n, m; // n 是模板串长度 m 是模式串长度
+
+int main()
+{
+    cin >> n >> p >> m >> s;
+
+    // p[0...0] 的区间内一定没有相等前后缀
+    ne[0] = -1;
+
+    // 构造模板串的 next 数组
+    for (int i = 1, j = -1; i < n; i ++)
+    {
+        while (j != -1 && p[i] != p[j + 1])
+        {
+            // 若前后缀匹配不成功
+            // 反复令 j 回退，直至到 -1 或是 s[i] == s[j + 1]
+            j = ne[j];
+        }
+        if (p[i] == p[j + 1]) 
+        {
+            j ++; // 匹配成功时，最长相等前后缀变长，最长相等前后缀最后一位变大
+        }
+        ne[i] = j; // 令 ne[i] = j，以方便计算 next[i + 1]
+    }
+
+    // kmp start !
+    for (int i = 0, j = -1; i < m; i ++)
+    {
+       while (j != -1 && s[i] != p[j + 1])
+       {
+           j = ne[j];
+       }
+       if (s[i] == p[j + 1])
+       {
+           j ++; // 匹配成功时，模板串指向下一位
+       }
+       if (j == n - 1) // 模板串匹配完成，第一个匹配字符下标为 0，故到 m - 1
+       {
+           // 匹配成功时，文本串结束位置减去模式串长度即为起始位置
+           cout << i - j << ' ';
+
+           // 模板串在模式串中出现的位置可能是重叠的
+           // 需要让 j 回退到一定位置，再让 i 加 1 继续进行比较
+           // 回退到 ne[j] 可以保证 j 最大，即已经成功匹配的部分最长
+           j = ne[j]; 
+       }
+    }
+
+   return 0;
+}
+```
+
+## 4、Trie树
+
+> 用来快速存储和查找字符串集合的一种数据结构
+
+```c++
+/* 
+一维是结点总数，而结点和结点之间的关系（谁是谁儿子）存在第二个维度，比如[0][1]=3, [0]表示根节点，[1]表示它有一个儿子‘b’,这个儿子的下标是3；接着如果有一个[3][2]=8 ; 说明根节点的儿子‘b’也有一个儿子‘c’，这个孙子的下标就是8；这样传递下去，就是一个字符串。随便给一个结点[x][y], 并不能看出它在第几层，只能知道，它的儿子是谁。
+*/
+
 #include<iostream>
 
 using namespace std;
 
-const int N=100010,M=1000010;
+const int N=100010;
 
-int n,m;
-char p[N],s[M];
-int ne[N];
+int son[N][26],cnt[N],idx; // 下标是0的点，既是根节点，又是空节点
+char str[N];
+
+void insert(char str[])
+{
+	int p=0;
+	for(int i=0;str[i];i++)
+	{
+		int u=str[i]-'a';
+		if(!son[p][u]) son[p][u]= ++idx;
+		p=son[p][u];	
+	}	
+	
+	cnt[p]++;
+}
+
+int query(char str[])
+{
+	int p=0;
+	for(int i=0;str[i];i++)
+	{
+		int u=str[i]-'a';
+		if(!son[p][u]) return 0;
+		p=son[p][u];
+	}
+	
+	return cnt[p];
+}
 
 int main()
 {
-	cin>>n>>p+1>>m>>s+1;
-	
-	// 求next过程 
-	for(int i=2,j=0;i<=n;i++)
+	int n;
+	cin>>n;
+	while(n--)
 	{
-		while(j&&p[i]!=p[j+1]) j=ne[j];
-		if(p[i]==p[j+1]) j++;
-		ne[i]=j;
+		char op[2];
+		scanf("%s%s",op,str);
+		if(op[0]=='I') insert(str);
+		else printf("%d\n",query(str));
 	}
 	
-	// kmp匹配过程 
-	for(int i=1,j=0;i<=m;i++)
+	return 0;
+} 
+```
+
+
+
+## 5、并查集
+
+> - 用途：
+>
+> 1. 将两个集合合并
+> 2. 询问两个元素是否在一个集合当中
+>
+> - 关键：
+>
+> 1. find() 函数
+
+```c++
+/*
+优化：路径压缩
+*/
+
+#include<iostream>
+
+using namespace std;
+
+const int N=100010;
+
+int n,m;
+int p[N]; // father数组，存储的是每个元素的父节点
+
+int find(int x) // 返回x的祖宗节点 + 路径压缩 
+{
+	if(p[x]!=x) p[x]=find(p[x]);
+	return p[x];	
+} 
+
+int main()
+{
+	scanf("%d%d",&n,&m);
+	for(int i=1;i<=n;i++) p[i]=i;
+	
+	while(m--)
 	{
-		while(j&&s[i]!=p[j+1]) j=ne[j];
-		if(s[i]==p[j+1]) j++;
-		if(j==n)
-		{
-			printf("%d ",i-n);
-			j=ne[j];
+		char op[2];
+		int a,b;
+		scanf("%s%d%d",op,&a,&b);
+		
+		if(op[0]=='M') p[find(a)]=find(b);
+		else{
+			if(find(a)==find(b)) puts("Yes");
+			else puts("No");
 		}
 	}
 	
 	return 0;
+ } 
+```
+
+
+
+> 给定一个包含 nn 个点（编号为 1∼n1∼n）的无向图，初始时图中没有边。
+>
+> 现在要进行 mm 个操作，操作共有三种：
+>
+> 1. `C a b`，在点a和点b之间连一条边，a和b可能相等；
+> 2. `Q1 a b`，询问点a和点b是否在同一个连通块中，a和b可能相等；
+> 3. `Q2 a`，询问点a所在连通块中点的数量；
+
+```c++
+#include<iostream>
+
+using namespace std;
+
+const int N=100010;
+
+int n,m;
+int p[N],s[N];
+
+int find(int x)
+{
+	if(p[x]!=x) p[x]=find(p[x]);
+	return p[x];	
+} 
+
+int main()
+{
+	scanf("%d%d",&n,&m);
+	for(int i=1;i<=n;i++) 
+	{
+		p[i]=i;
+		s[i]=1;
+	}
+	
+	while(m--)
+	{
+		char op[5];
+		int a,b;
+		scanf("%s",op);
+		
+		if(op[0]=='C')
+		{
+			scanf("%d%d",&a,&b);
+			if(find(a)==find(b)) continue;
+			s[find(b)]+=s[find(a)];
+			p[find(a)]=find(b);
+		}
+		else if(op[1]=='1')
+		{
+			scanf("%d%d",&a,&b);
+			if(find(a)==find(b)) puts("Yes");
+			else puts("No");
+		}
+		else
+		{
+			scanf("%d",&a);
+			printf("%d\n",s[find(a)]);
+		}
+	}
+	
+	return 0;
+ } 
+```
+
+
+
+## 6、堆
+
+> - 支持操作
+>
+> 1. 插入一个数
+> 2. 求集合当中的最小值
+> 3. 删除最小值
+> 4. 删除任意一个元素
+> 5. 修改任意一个元素
+
+
+
+> 堆排序
+
+```c++
+/*
+用一维数组存储一个堆
+x的左儿子节点为2x，右儿子节点为2x+1
+*/
+
+#include<iostream>
+#include<algorithm>
+
+using namespace std;
+
+const int N=100010;
+
+int n,m;
+int h[N],s; 
+
+void down(int u)
+{
+	int t=u; // t表示3个数中的最小值 
+	if(u*2<=s&&h[u*2]<h[t]) t=u*2;
+	if(u*2+1<=s&&h[u*2+1]<h[t]) t=u*2+1;
+	if(u!=t)
+	{
+		swap(h[u],h[t]);
+		down(t);
+	}
 }
+
+/*
+堆的up操作
+void up(int u)
+{
+	while(u/2&&h[u/2]>h[u])
+	{
+		swap(h[u/2],h[u]);
+		u/=2;
+	}
+}
+*/
+
+int main()
+{
+	scanf("%d%d",&n,&m);
+	for(int i=1;i<=n;i++) scanf("%d",&h[i]);
+	s=n;
+	
+	for(int i=n/2;i;i--) down(i); 
+	
+	while(m--)
+	{
+		printf("%d ",h[1]);
+		h[1]=h[s];
+		s--;
+		down(1);
+	}
+	
+	return 0;
+}
+```
+
+
+
+> 带映射的堆模拟
+
+```c++
+#include<iostream>
+#include<algorithm>
+#include<string.h>
+
+using namespace std;
+
+const int N=100010;
+
+int h[N],s,ph[N],hp[N]; // ph[k]=j表示存的第k个数在堆中的下标为j，hp[j]=k表示堆中下标为j的数是第k个存的数 
+
+void heap_swap(int a,int b)
+{
+	swap(ph[hp[a]],ph[hp[b]]);
+	swap(hp[a],hp[b]);
+	swap(h[a],h[b]);
+}
+
+void down(int u)
+{
+	int t=u; // t表示3个数中的最小值 
+	if(u*2<=s&&h[u*2]<h[t]) t=u*2;
+	if(u*2+1<=s&&h[u*2+1]<h[t]) t=u*2+1;
+	if(u!=t)
+	{
+		heap_swap(u,t);
+		down(t);
+	}
+}
+
+void up(int u)
+{
+	while(u/2&&h[u/2]>h[u])
+	{
+		heap_swap(u/2,u);
+		u/=2;
+	}
+}
+
+int main()
+{
+	int n,m=0;
+	cin>>n;
+	while(n--)
+	{
+		char op[10];
+		int k,x;
+		
+		scanf("%s",op);
+		if(!strcmp(op,"I"))
+		{
+			scanf("%d",&x);
+			s++;
+			m++;
+			ph[m]=s,hp[s]=m;
+			h[s]=x;
+			up(s);
+		}
+		else if(!strcmp(op,"PM")) printf("%d\n",h[1]);
+		else if(!strcmp(op,"DM"))
+		{
+			heap_swap(1,s);
+			s--;
+			down(1);
+		}
+		else if(!strcmp(op,"D"))
+		{
+			cin>>k;
+			k=ph[k];
+			heap_swap(k,s);
+			s--;
+			down(k),up(k);
+		}
+		else
+		{
+			cin>>k>>x;
+			k=ph[k];
+			h[k]=x;
+			down(k),up(k);
+			
+		}
+	}
+	return 0;
+}
+```
+
+
+
+## 7、Hash表
+
+```c++
+```
+
+
+
+## 8、C++STL使用技巧
+
+```c++
 ```
 
