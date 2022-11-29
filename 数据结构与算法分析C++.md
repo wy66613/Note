@@ -1,4 +1,4 @@
-# 一、基础算法
+# 	一、基础算法
 
 ## 1、排序
 
@@ -225,6 +225,35 @@ void MergeSort(int* arr, int l, int r)
 	
 	for (i = l, j = 0; i <= r; i++, j++) arr[i] = tmp[j];
 }	
+```
+
+
+
+#### 逆序对的数量
+
+```c++
+typedef long long LL;
+LL mergesort(int *arr,int l,int r)
+{
+	if(l==r) return 0;
+    int mid=(l+r)/2;
+    LL res]=mergesort(arr,l,mid)+mergesort(arr,mid+1,r);
+    
+    int k=0,tmp[100010],i=l,j=mid+1;
+    while(i<j)
+    {
+        if(arr[i]<=arr[j]) tmp[k++]=arr[i++];
+        else
+        {
+            tmp[k++]=arr[j++];
+            res+=mid-i+1;
+        }
+    }
+    while(i<=mid) tmp[k++]=arr[i++];
+    while(j<=r) tmp[k++]=arr[j++];
+    
+    for(i=l,j=0;i<=r;i++j++) arr[i]=tmp[j];
+}
 ```
 
 
@@ -1615,7 +1644,7 @@ int main()
 >
 > 1. 将一个庞大的值域映射到一个较小的值域中
 
-
+### 存储结构
 
 > - 解决冲突的方法：
 >
@@ -1679,12 +1708,217 @@ int main()
 ```c++
 // 开放寻址法
 
+#include<iostream>
+#include<cstring>
+using namespace std;
+
+const int N=200003,null=0x3f3f3f3f; 
+// N为数据大小的2~3倍，质数，可以最大程度减少冲突 
+// null 是一个不在数据范围内的数，用来表示空的坑
+
+int h[N]; 
+
+int find(int x)
+{
+	int t=(x%N+N)%N;
+	
+	while(h[t]!=null&&h[t]!=x)
+	{
+		t++;
+		if(t==N) t=0;
+	}
+	return t;
+}
+
+int main()
+{
+	int n;
+	scanf("%d",&n);
+	
+	memset(h,0x3f,sizeof h);
+	
+	while(n--)
+	{
+		char op[2];
+		int x;
+		scanf("%s%d",op,&x);
+		
+		if(op[0]=='I') h[find(x)]=x;
+		else
+		{
+			if(h[find(x)]==null) puts("No");
+			else puts("Yes");
+		}
+	}
+	
+	return 0;
+}
+```
+
+
+
+### 字符串哈希
+
+> 方法：字符串前缀哈希法
+
+![字符串哈希公式推导](img/字符串哈希公式推导.png)
+
+```c++
+#include<iostream>
+
+using namespace std;
+
+typedef unsigned long long ULL;
+const int N=100010,P=131; // P为进制。  P=131 or 13331 经验值 
+
+int n,m;
+char str[N];
+ULL h[N],p[N]; // p数组存储P的幂 
+
+ULL get(int l,int r) // ULL溢出代替了取模
+{
+	return h[r]-h[l-1]*p[r-l+1];
+}
+
+int main()
+{
+	scanf("%d%d%s",&n,&m,str+1);
+	
+	p[0]=1; // P的0次方为1
+	for(int i=1;i<=n;i++)
+	{
+		p[i]=p[i-1]*P;
+		h[i]=h[i-1]*P+str[i];
+	}
+	
+	while(m--)
+	{
+		int l1,r1,l2,r2;
+		scanf("%d%d%d%d",&l1,&r1,&l2,&r2);
+		
+		if(get(l1,r1)==get(l2,r2)) puts("Yes");
+		else puts("No");
+	}
+	
+	return 0;
+}
 ```
 
 
 
 ## 8、C++STL使用技巧
 
+### vector 
+
 ```c++
+#include<cstdio>
+#include<cstring>
+#include<iostream>
+#include<algorithm>
+#include<vector>
+
+using namespace std;
+
+int main()
+{
+    vector<int> a(10,3); // 创建一个长度为10的vector，初始化为3
+    vector<int> a[10]; // 创建一个vector数组
+    
+    a.size(); // 返回vector的长度，时间复杂度为O（1）
+    a.empty(); // 返回vector是否为空，时间复杂度为O（1）
+    a.clear(); // 清空
+    a.front(); // 返回vector的第一个数
+    a.back(); // 返回vector的最后一个数
+    a.push_back(); // 向vector的最后插入一个数
+    a.pop_back(); // 删除vector的最后一个数
+    a.begin(),a.end(); // begin是第0个数，end是最后一个数后面的那个数
+    
+    for(vector<int>::iterator i=a.begin();i!=a.end();i++) cout<<*i<<endl; // 迭代器
+    
+    // 支持比较运算
+}
 ```
+
+
+
+### string
+
+```c++
+str.size(); // 返回字符个数
+str.empty(); // 是否为空
+str.clear(); // 清空
+str.substr(idx,size); // 返回一个字串，第一个参数为起始下标，第二个参数为长度（可省略）
+str.c_str(); // 返回str的起始地址
+```
+
+
+
+### queue
+
+```c++
+push(); // 向队尾插入一个元素
+front(); // 返回队头元素
+back(); // 返回队尾元素
+pop(); // 弹出队头元素
+size();
+empty();
+```
+
+
+
+### priority queue（heap）
+
+```c++
+// 默认是大根堆
+push(); // 插入一个元素
+top(); // 返回堆顶元素
+pop(); // 弹出堆顶元素
+
+heap.push(-x); // 小根堆
+priority_queue<int,vector<int>,greater<int> > heap; // 定义一个小根堆
+```
+
+
+
+### stack
+
+```c++
+push(); // 向栈顶加入一个元素
+top(); // 返回栈顶元素
+pop(); // 弹出栈顶元素
+size();
+empty();
+```
+
+
+
+deque
+
+```c++
+size();
+empty();
+clear();
+front();
+back();
+push_back();
+pop_back();
+push_front();
+pop_front();
+[]; // 支持随机寻址
+```
+
+
+
+### set
+
+```c++
+#include<set>
+
+set<int> s; // 不能有重复
+multiset<int> s; // 可以有重复
+```
+
+
+
+# 三、搜索与图论
 
