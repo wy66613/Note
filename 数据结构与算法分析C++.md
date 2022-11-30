@@ -437,6 +437,8 @@ vector<int> mul(vector<int>& A,int b)
 		C.push_back(t%10);
 		t/=10;
 	}
+    
+    while(C.size()>1&&C.back()==0) C.pop_back();
 	
 	return C;
 }
@@ -463,7 +465,7 @@ int main()
 
 一个高精度的整数 ÷ 一个较小的数
 
-```c++\
+```c++
 #include<iostream>
 #include<vector>
 #include<algorithm>
@@ -1434,11 +1436,7 @@ int find(int x)
 int main()
 {
 	scanf("%d%d",&n,&m);
-	for(int i=1;i<=n;i++) 
-	{
-		p[i]=i;
-		s[i]=1;
-	}
+	for(int i=1;i<=n;i++) p[i]=i,s[i]=1;
 	
 	while(m--)
 	{
@@ -1500,11 +1498,13 @@ using namespace std;
 const int N=100010;
 
 int n,m;
-int h[N],s; 
+// h[i] 表示第i个结点存储的值，i从1开始，2*i是左子节点，2*i + 1是右子节点
+// size 既表示堆里存储的元素个数，又表示最后一个结点的下标
+int h[N],s; // 堆有两个变量h[N]，size; 怎么这里的size和文件里有冲突，只能改成s了
 
 void down(int u)
 {
-	int t=u; // t表示3个数中的最小值 
+	int t=u; // t表示3个数中的最小的结点的下标
 	if(u*2<=s&&h[u*2]<h[t]) t=u*2;
 	if(u*2+1<=s&&h[u*2+1]<h[t]) t=u*2+1;
 	if(u!=t)
@@ -1532,7 +1532,7 @@ int main()
 	for(int i=1;i<=n;i++) scanf("%d",&h[i]);
 	s=n;
 	
-	for(int i=n/2;i;i--) down(i); 
+	for(int i=n/2;i;i--) down(i); // 把堆初始化成小根堆，从二叉树的倒数第二行开始，把数字大的下沉
 	
 	while(m--)
 	{
@@ -1557,7 +1557,7 @@ int main()
 
 using namespace std;
 
-const int N=100010;
+const int N=1e5+10;
 
 int h[N],s,ph[N],hp[N]; // ph[k]=j表示存的第k个数在堆中的下标为j，hp[j]=k表示堆中下标为j的数是第k个存的数 
 
@@ -1921,4 +1921,160 @@ multiset<int> s; // 可以有重复
 
 
 # 三、搜索与图论
+
+## 1、DFS-深度优先搜索
+
+### 全排列问题
+
+- DFS过程示意图
+
+![深度优先遍历](img/深度优先遍历.png)
+
+```c++
+// 每次递归是横向移动，遍历是纵向移动
+
+#include<iostream>
+using namespace std;
+const int N=10;
+int path[N]; // 保存序列
+bool st[N]; // 数字是否被用过，state
+int n;
+void dfs(int u)
+{
+	if(u>n) // 数字填完了 
+	{
+		for(int i=1;i<=n;i++) printf("%d",path[i]);
+		puts("");
+		return;
+	}
+	
+	for(int i=1;i<=n;i++)
+	{
+		if(!st[i]) // 数字i没被用过 
+		{
+			path[u]=i; 
+			st[i]=1; // 数字被用，修改数字状态 
+			dfs(u+1);
+			st[i]=0; // 回溯，取出i 
+		}
+	}
+}
+
+int main()
+{
+	cin>>n;
+	dfs(1);	
+	return 0;
+} 
+```
+
+
+
+### n-皇后问题
+
+- n-皇后问题对角线
+
+![n-皇后问题正反对角线](img/n-皇后问题正反对角线.png)
+
+![n-皇后问题对角线数组解释](img/n-皇后问题对角线数组解释.jpg)**
+
+```c++
+// 方法一：
+// 剪枝
+
+#include<iostream>
+using namespace std;
+const int N=20; // 开两倍，因为对角线个数是两倍 
+
+int n;
+char g[N][N];
+int col[N],dg[N],udg[N]; // dg为对角线数组，表示的是截距，截距相等说明在同一条对角线上 
+
+void dfs(int u)
+{
+	if(u==n)
+	{
+		for(int i=0;i<n;i++) puts(g[i]);
+		puts("");
+		return;
+	}
+	
+	for(int y=0;y<n;y++)
+		// 剪枝，对不满足要求的点，不再继续往下搜索 
+		if(!col[y]&&!dg[y-u+n]&&!udg[u+y]) // y-u+n 使其不为负
+		{
+			col[y]=dg[y-u+n]=udg[y+u]=1;
+			g[u][y]='Q';
+			dfs(u+1);
+			g[u][y]='.'; // 回溯 
+			col[y]=dg[y-u+n]=udg[u+y]=0;
+		}
+}
+
+int main()
+{
+	cin>>n;
+	for(int i=0;i<n;i++)
+		for(int j=0;j<n;j++)
+			g[i][j]='.';
+			
+	dfs(0);
+	
+	return 0;
+}
+```
+
+
+
+```c++
+// 方法二：
+
+#include<iostream>
+using namespace std;
+const int N=20;  
+
+int n;
+char g[N][N];
+int row[N],col[N],dg[N],udg[N];
+
+void dfs(int x,int y,int s) // s为当前皇后个数 
+{
+	if(y==n) y=0,x++; // 处理超出边界的情况
+	
+	if(x==n)
+	{
+		if(s==n)
+		{
+			for(int i=0;i<n;i++) puts(g[i]);
+			puts("");	
+		}
+		return;
+	}
+	
+	// 不放皇后
+	dfs(x,y+1,s);
+	
+	// 放皇后
+	if(!row[x]&&!col[y]&&!dg[x+y]&&!udg[x-y+n])
+	{
+		g[x][y]='Q';
+		row[x]=col[y]=dg[x+y]=udg[x-y+n]=1;
+		dfs(x,y+1,s+1);
+		row[x]=col[y]=dg[x+y]=udg[x-y+n]=0;
+		g[x][y]='.';
+	} 
+} 
+
+int main()
+{
+	cin>>n;
+	for(int i=0;i<n;i++)
+		for(int j=0;j<n;j++)
+			g[i][j]='.';
+			
+	dfs(0,0,0);
+	
+	return 0;
+}
+```
 
