@@ -2103,5 +2103,432 @@ int main()
 
 
 ```c++
+#include<iostream>
+#include<cstring>
+#include<queue>
+using namespace std;
+const int N=110;
+int g[N][N];
+int f[N][N];
+int n,m;
+void bfs(int a,int b)
+{
+	queue<pair<int,int> > q; // 创建队列 
+	q.push({a,b}); // 起点加入队列 
+	while(!q.empty()) // 开始遍历地图 
+	{
+		pair<int,int> start=q.front();
+		q.pop();
+		g[start.first][start.second]=1; // 走过，打上标记
+		int dx[4]={0,1,0,-1},dy[4]={-1,0,1,0}; // 四个方向，分别为上右下左
+		for(int i=0;i<4;i++) // 四个方向遍历
+		{
+			int x=start.first+dx[i],y=start.second+dy[i];
+			if(g[x][y]==0) // 能走且没有走过 
+			{
+				g[x][y]=1;
+				f[x][y]=f[start.first][start.second]+1; // 距离+1 
+				q.push({x,y});	
+			}	
+		} 
+	}
+	cout<<f[n][m]; 
+}
+
+int main()
+{
+	memset(g,1,sizeof(g));
+	cin>>n>>m;
+	for(int i=1;i<=n;i++)
+		for(int j=1;j<=m;j++)
+			cin>>g[i][j];
+			
+	bfs(1,1);
+	return 0;
+}
+```
+
+
+
+## 3、树与图
+
+- 存储方式——邻接表
+
+> 类似于哈希表中的拉链法
+
+![邻接表的存储结构](img/邻接表的存储结构.png)
+
+
+
+### 深度优先遍历
+
+```c++
+// 树的重心
+
+#include<iostream>
+#include<cstring>
+#include<cstdio>
+#include<algorithm>
+using namespace std;
+
+const int N=1e5+10,M=N*2;
+
+int n;
+int h[N],e[M],ne[M],idx;
+int ans=N; // 全局结果，最小的一个最大值
+bool st[N];
+
+void add(int a,int b)
+{
+	e[idx]=b,ne[idx]=h[a],h[a]=idx++;	
+}
+
+int dfs(int u)
+{
+	st[u]=true;
+	
+	int res=0,sum=0; // res存储每一个连通块中节点数目的最大值，sun存储以u为根的子树的大小
+	for(int i=h[u];i!=-1;i=ne[i])
+	{
+		int j=e[i];
+		if(st[j]) continue;
+		
+		int s=dfs(j); // s表示当前子树的大小
+		res=max(res,s);
+		sum+=s;
+	}
+	
+	res=max(res,n-sum-1);
+	ans=min(ans,res);
+	
+	return sum+1;
+}
+
+int main()
+{
+	scanf("%d",&n);
+	memset(h,-1,sizeof(h));
+	
+	for(int i=0;i<n-1;i++)
+	{
+		int a,b;
+		scanf("%d%d",&a,&b);
+		add(a,b),add(b,a);
+	}
+	
+	dfs(1);
+	
+	printf("%d\n",ans);
+	return 0;
+}
+```
+
+
+
+### 广度优先遍历
+
+```c++
+// 图中点的层次
+
+#include<iostream>
+#include<cstring>
+#include<algorithm>
+#include<queue>
+using namespace std;
+const int N=1e5+10;
+
+int n,m;
+int h[N],e[N],ne[N],idx;
+int dist[N],st[N]; // dist存储距离，st标记点是否走到过 
+
+void add(int a,int b)
+{
+	e[idx]=b,ne[idx]=h[a],h[a]=idx++;
+}
+
+void bfs()
+{
+	memset(dist,-1,sizeof(dist));
+	dist[1]=0;
+	queue<int> q;
+	q.push(1);
+	st[1]=1;
+	while(q.size())
+	{
+		int t=q.front();
+		q.pop();
+		for(int i=h[t];i!=-1;i=ne[i])
+		{
+			int j=e[i];
+			if(!st[j])
+			{
+				dist[j]=dist[t]+1;
+				q.push(j);
+				st[j]=1;
+			}
+		}
+	}
+}
+
+int main()
+{
+	cin>>n>>m;
+	memset(h,-1,sizeof(h));
+	
+	for(int i=0;i<m;i++)
+	{
+		int a,b;
+		cin>>a>>b;
+		add(a,b);
+	}
+	
+	bfs(); 
+	cout<<(dist[n]==-1?-1:dist[n]);
+	return 0;
+}
+```
+
+
+
+## 4、拓扑排序
+
+- 注：只有有向图才有拓扑序列
+- 重要概念：**入度**和**出度**
+
+```c++
+#include<cstring>
+#include<iostream>
+#include<algorithm>
+
+using namespace std;
+
+const int N=100010;
+
+int n,m;
+int h[N],e[N],ne[N],idx;
+int q[N],d[N]; // d存储入度
+
+void add(int a,int b)
+{
+	e[idx]=b,ne[idx]=h[a],h[a]=idx++;
+}
+
+bool topsort()
+{
+	int hh=0,tt=-1;
+	
+	for(int i=1;i<=n;i++)
+		if(!d[i]) q[++tt]=i; // 入度为0，入队 
+		
+	while(hh<=tt)
+	{
+		int t=q[hh++]; // 出队 
+		for(int i=h[t];i!=-1;i=ne[i]) // 遍历出边 
+		{
+			int j=e[i];
+			d[j]--; // 入度-1 
+			if(d[j]==0) q[++tt]=j;
+		}
+	}
+	return tt+1==n;
+}
+
+int main()
+{
+	cin>>n>>m;
+	memset(h,-1,sizeof(h));
+	for(int i=0;i<m;i++)
+	{
+		int a,b;
+		cin>>a>>b;
+		add(a,b);
+		d[b]++;	
+	}	
+	
+	if(topsort())
+	{
+		for(int i=0;i<n;i++) printf("%d ",q[i]);
+		puts("");
+	}
+	
+	else puts("-1");
+	return 0;
+ } 
+```
+
+
+
+## 5、最短路
+
+![最短路问题分类](img/最短路问题分类.png)
+
+
+
+### 朴素Dijkstra算法
+
+```c++
+//Dijkstra求最短路Ⅰ
+
+#include<iostream>
+#include<cstring>
+#include<algorithm>
+
+using namespace std;
+
+const int N=510;
+
+// 稀疏图用邻接矩阵来存储
+int n,m;
+int g[N][N]; // 用邻接矩阵存储每条边的长度
+int dist[N]; // 保存源点到其余各个节点的距离 
+bool st[N];
+
+int dijkstra()
+{
+	memset(dist,0x3f,sizeof(dist)); // 初始化源点到各个节点的距离为无穷大
+	 
+	dist[1]=0;
+	
+	for(int i=0;i<n;i++) // 有n个点，所以要进行n次遍历 
+	{
+		int t=-1;
+		for(int j=1;j<=n;j++) // 遍历n个节点
+			if(!st[j]&&(t==-1||dist[t]>dist[j])) t=j; // 该步骤即寻找还未确定最短路的点中路径最短的点
+		st[t]=true; // 收录进最优路径
+        
+         // 遍历全部的节点，依次更新每个点所到相邻的点路径值
+		// 如果不是相邻点，dist仍为无穷大
+		for(int j=1;j<=n;j++) dist[j]=min(dist[j],dist[t]+g[t][j]); 
+	}
+	
+	if(dist[n]==0x3f3f3f3f) return -1; // 最短距离不存在，返回-1
+	return dist[n]; // 返回最短距离
+}
+
+int main()
+{
+	scanf("%d%d",&n,&m);
+	
+	memset(g,0x3f,sizeof(g)); // 初始化每条边的长度为无穷大
+	
+	while(m--)
+	{
+		int a,b,c;
+		cin>>a>>b>>c;
+		g[a][b]=min(g[a][b],c); // 剔除重边
+	}
+	
+	int t =dijkstra();
+	printf("%d\n",t);
+	
+	return 0;
+}
+```
+
+
+
+- 算法图解
+
+迪杰斯特拉算法采用的是一种贪心的策略。
+
+求源点到其余各点的最短距离步骤如下：
+
+1. 用一个 dist 数组保存源点到其余各个节点的距离，dist[i] 表示源点到节点 i 的距离。初始时，dist 数组的各个元素为无穷大。
+   用一个状态数组 state 记录是否找到了源点到该节点的最短距离，state[i] 如果为真，则表示找到了源点到节点 i 的最短距离，state[i] 如果为假，则表示源点到节点 i 的最短距离还没有找到。初始时，state 各个元素为假。
+   ![Dijkstra求最短路Ⅰ图解图1](img/Dijkstra求最短路Ⅰ图解图1.png)
+2. 源点到源点的距离为 0。即dist[1] = 0。
+   ![Dijkstra求最短路Ⅰ图解图2](img/Dijkstra求最短路Ⅰ图解图2.png)
+3. 遍历 dist 数组，找到一个节点，这个节点是：没有确定最短路径的节点中距离源点最近的点。假设该节点编号为 i。此时就找到了源点到该节点的最短距离，state[i] 置为 1。
+   ![Dijkstra求最短路Ⅰ图解图3](img/Dijkstra求最短路Ⅰ图解图3.png)
+4. 遍历 i 所有可以到达的节点 j，如果 dist[j] 大于 dist[i] 加上 i -> j 的距离，即 dist[j] > dist[i] + w[i][j]（w[i][j] 为 i -> j 的距离） ，则更新 dist[j] = dist[i] + w[i][j]。
+   ![Dijkstra求最短路Ⅰ图解图4](img/Dijkstra求最短路Ⅰ图解图4.png)
+5. 重复 3 4 步骤，直到所有节点的状态都被置为 1。
+   ![Dijkstra求最短路Ⅰ图解图5](img/Dijkstra求最短路Ⅰ图解图5.png)
+6. 此时 dist 数组中，就保存了源点到其余各个节点的最短距离。
+   ![Dijkstra求最短路Ⅰ图解图6](img/Dijkstra求最短路Ⅰ图解图6.png)
+
+
+
+- 视频讲解
+
+[最短路径查找—Dijkstra算法](https://www.bilibili.com/video/BV1zz4y1m7Nq/?spm_id_from=333.337.search-card.all.click&vd_source=8764a2e9df7932252ed022cd46e7b6b5)
+
+
+
+### 堆优化版的Dijkstra算法
+
+朴素算法的主要耗时的步骤是从dist 数组中选出：没有确定最短路径的节点中距离源点最近的点 t。只是找个最小值而已，没有必要每次遍历一遍dist数组。在一组数中每次能很快的找到最小值，很容易想到使用小根堆。可以使用库中的小根堆（推荐）或者自己编写。
+
+```c++
+#include<iostream>
+#include<cstring>
+#include<algorithm>
+#include<queue>
+
+using namespace std;
+typedef pair<int,int> PII; // 堆里存储距离和节点编号
+const int N=1e6+10;
+
+// 稠密图用邻接表来存储
+int n,m;
+int h[N],e[N],ne[N],w[N],idx; // w存储权重 
+int dist[N]; // 保存源点到其余各个节点的距离 
+bool st[N];
+
+void add(int a,int b,int c)
+{
+	e[idx]=b,w[idx]=c,ne[idx]=h[a],h[a]=idx++;
+}
+
+int dijkstra()
+{
+	memset(dist,0x3f,sizeof(dist)); // 初始化距离为无穷大
+	dist[1]=0;
+	
+	priority_queue<PII,vector<PII>,greater<PII> > heap; // 初始化小根堆
+	heap.push({0,1}); // 插入距离和节点编号
+	
+	while(heap.size())
+	{
+		auto t=heap.top();
+		heap.pop();
+		
+		int ver=t.second; // ver为节点编号
+		if(st[ver]) continue; // 如果距离已经确定，则跳过该点
+        st[ver]=true;
+		
+		for(int i=h[ver];i!=-1;i=ne[i]) // 更新ver指向的节点距离
+		{
+			int j=e[i];
+			if(dist[j]>dist[ver]+w[i])
+			{
+				dist[j]=dist[ver]+w[i];
+				heap.push({dist[j],j});
+			}
+		}
+	}
+
+	if(dist[n]==0x3f3f3f3f) return -1;
+	return dist[n];
+}
+
+int main()
+{
+	scanf("%d%d",&n,&m);
+	
+	memset(h,-1,sizeof(h));
+	
+	while(m--)
+	{
+		int a,b,c;
+		cin>>a>>b>>c;
+		add(a,b,c);
+	}
+	
+	int t =dijkstra();
+	printf("%d\n",t);
+	
+	return 0;
+}
 ```
 
