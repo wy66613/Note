@@ -2360,7 +2360,9 @@ int main()
 
 ## 5、最短路
 
-![最短路问题分类](img/最短路问题分类.png)
+### 最短路算法大纲
+
+![最短路问题大纲](img/最短路问题大纲.png)
 
 
 
@@ -2371,13 +2373,12 @@ int main()
 
 #include<iostream>
 #include<cstring>
-#include<algorithm>
 
 using namespace std;
 
 const int N=510;
 
-// 稀疏图用邻接矩阵来存储
+// 稠密图用邻接矩阵来存储
 int n,m;
 int g[N][N]; // 用邻接矩阵存储每条边的长度
 int dist[N]; // 保存源点到其余各个节点的距离 
@@ -2449,9 +2450,9 @@ int main()
 
 
 
-- 视频讲解
+- 最短路径查找—Dijkstra算法视频讲解
 
-[最短路径查找—Dijkstra算法](https://www.bilibili.com/video/BV1zz4y1m7Nq/?spm_id_from=333.337.search-card.all.click&vd_source=8764a2e9df7932252ed022cd46e7b6b5)
+<iframe src="//player.bilibili.com/player.html?aid=586430293&bvid=BV1zz4y1m7Nq&cid=289260026&page=1" scrolling="no" border="0" frameborder="no" framespacing="0" height="600" allowfullscreen="true"> </iframe>
 
 
 
@@ -2462,73 +2463,482 @@ int main()
 ```c++
 #include<iostream>
 #include<cstring>
-#include<algorithm>
 #include<queue>
-
 using namespace std;
-typedef pair<int,int> PII; // 堆里存储距离和节点编号
-const int N=1e6+10;
+typedef pair<int,int> PII;
+const int N=1.5e5+10;
 
-// 稠密图用邻接表来存储
-int n,m;
-int h[N],e[N],ne[N],w[N],idx; // w存储权重 
-int dist[N]; // 保存源点到其余各个节点的距离 
+// 稀疏图用邻接表来存
+int h[N],e[N],ne[N],w[N],dist[N],idx;
 bool st[N];
+int n,m;
 
-void add(int a,int b,int c)
+void add(int x,int y,int c)
 {
-	e[idx]=b,w[idx]=c,ne[idx]=h[a],h[a]=idx++;
+    // 有重边也不要紧，假设1->2有权重为2和3的边，再遍历到点1的时候2号点的距离会更新两次放入堆中
+    // 这样堆中会有很多冗余的点，但是在弹出的时候还是会弹出最小值2+x（x为之前确定的最短路径），
+    // 并标记st为true，所以下一次弹出3+x会continue不会向下执行。
+    w[idx] = c;
+	e[idx]=y,w[idx]=c,ne[idx]=h[x],h[x]=idx++;
 }
 
 int dijkstra()
 {
-	memset(dist,0x3f,sizeof(dist)); // 初始化距离为无穷大
+	memset(dist,0x3f,sizeof(dist));
 	dist[1]=0;
-	
-	priority_queue<PII,vector<PII>,greater<PII> > heap; // 初始化小根堆
-	heap.push({0,1}); // 插入距离和节点编号
-	
+	priority_queue<PII,vector<PII>,greater<PII> > heap;
+    // 这里heap中为什么要存pair呢，首先小根堆是根据距离来排的，所以有一个变量要是距离，
+    // 其次在从堆中拿出来的时候要知道知道这个点是哪个点，不然怎么更新邻接点呢？所以第二个变量要存点。
+	heap.push({0,1}); // 这个顺序不能倒，pair排序时是先根据first，再根据second，这里显然要根据距离排序
 	while(heap.size())
 	{
-		auto t=heap.top();
+		auto t=heap.top(); // 取不在集合st中距离最短的点
 		heap.pop();
+		int ver=t.second,distance=t.first;
 		
-		int ver=t.second; // ver为节点编号
-		if(st[ver]) continue; // 如果距离已经确定，则跳过该点
-        st[ver]=true;
+		if(st[ver]) continue;
+		st[ver]=true;
 		
-		for(int i=h[ver];i!=-1;i=ne[i]) // 更新ver指向的节点距离
+		for(int i=h[ver];i!=-1;i=ne[i])
 		{
-			int j=e[i];
-			if(dist[j]>dist[ver]+w[i])
+			int j=e[i]; // i只是个下标，e中在存的是i这个下标对应的点。
+			if(dist[j]>distance+w[i])
 			{
-				dist[j]=dist[ver]+w[i];
+				dist[j]=distance+w[i];
 				heap.push({dist[j],j});
 			}
 		}
 	}
-
 	if(dist[n]==0x3f3f3f3f) return -1;
 	return dist[n];
 }
 
 int main()
 {
-	scanf("%d%d",&n,&m);
-	
+	cin>>n>>m;
 	memset(h,-1,sizeof(h));
-	
 	while(m--)
 	{
 		int a,b,c;
 		cin>>a>>b>>c;
 		add(a,b,c);
 	}
+	int t=dijkstra();
+	cout<<t<<endl;
+	return 0;
+}
+```
+
+
+
+### Dijkstra算法小结
+
+1. 关于稠密图和稀疏图的说明：
+
+   稠密图是指点:边 = n : n ^2
+   稀疏图是指点:边 = n : n
+
+   连线很多的时候，对应的就是稠密图，显然，稠密图的路径太多了，所以就用点来找；点很多但是连线不是很多的时候对应的就是稀疏图，稀疏图路径不多，所以按照连接路径来找最短路，这个过程运用优先队列，能确保每一次查找保留到更新队列里的都是最小的，同时还解决了两个点多条路选择最短路的问题；
+
+2. 冗余的点如何处理：
+   每一次进行dist中数据优化时，每进行一次，都会有一个**{dist[j],j}**计入优先队列，但是由于小根堆的性质，最小的才会被弹出，因而之后的就会被**continue**；
+
+
+
+### Bellman-Ford算法
+
+- 如果存在负权回路，则最短路径可能为负无穷，因此该算法不能存在负权回路
+
+```c++
+// 有边数限制的最短路
+
+// 任意存储方式，只要能遍历到所有的边
+#include<cstring>
+#include<iostream>
+#include<algorithm>
+using namespace std;
+
+const int N=510,M=10010;
+
+int n,m,k;
+int dist[N],backup[N];
+
+struct Edge
+{
+	int a,b,w;
+}edges[M];
+
+void bellman_ford()
+{
+	memset(dist,0x3f,sizeof(dist));
+	dist[1]=0;
+	for(int i=0;i<k;i++)
+	{
+		memcpy(backup,dist,sizeof(backup));
+		for(int j=0;j<m;j++) // 松弛操作
+		{
+			int a=edges[j].a,b=edges[j].b,w=edges[j].w;
+			dist[b]=min(dist[b],backup[a]+w); 
+		}
+	}
+}
+
+int main()
+{
+	cin>>n>>m>>k;
 	
-	int t =dijkstra();
-	printf("%d\n",t);
+	for(int i=0;i<m;i++)
+	{
+		int a,b,w;
+		cin>>a>>b>>w;
+		edges[i]={a,b,w}; 
+	}
+	
+	bellman_ford();
+	if(dist[n]>0x3f3f3f3f/2) puts("impossible");
+	else printf("%d\n",dist[n]);
 	
 	return 0;
 }
 ```
+
+
+
+### SPFA算法
+
+- SPFA求最短路
+
+```c++
+#include <cstring>
+#include <iostream>
+#include <algorithm>
+#include <queue>
+
+using namespace std;
+
+const int N = 100010;
+
+int n, m;
+int h[N], w[N], e[N], ne[N], idx;
+int dist[N];
+bool st[N];
+
+void add(int a, int b, int c)
+{
+    e[idx] = b, w[idx] = c, ne[idx] = h[a], h[a] = idx ++ ;
+}
+
+int spfa()
+{
+    memset(dist, 0x3f, sizeof dist);
+    dist[1] = 0;
+
+    queue<int> q;
+    q.push(1);
+    st[1] = true; // 当前点是否在队列中，防止队列中存储重复点
+
+    while (q.size())
+    {
+        int t = q.front();
+        q.pop();
+
+        st[t] = false;
+
+        for (int i = h[t]; i != -1; i = ne[i])
+        {
+            int j = e[i];
+            if (dist[j] > dist[t] + w[i])
+            {
+                dist[j] = dist[t] + w[i];
+                if (!st[j])
+                {
+                    q.push(j);
+                    st[j] = true;
+                }
+            }
+        }
+    }
+
+    return dist[n];
+}
+
+int main()
+{
+    scanf("%d%d", &n, &m);
+
+    memset(h, -1, sizeof h);
+
+    while (m -- )
+    {
+        int a, b, c;
+        scanf("%d%d%d", &a, &b, &c);
+        add(a, b, c);
+    }
+
+    int t = spfa();
+
+    if (t == 0x3f3f3f3f) puts("impossible");
+    else printf("%d\n", t);
+
+    return 0;
+}
+```
+
+
+
+- SPFA也能用于判断是否存在负环
+
+```c++
+#include <cstring>
+#include <iostream>
+#include <algorithm>
+#include <queue>
+
+using namespace std;
+
+const int N = 100010;
+
+int n, m;
+int h[N], w[N], e[N], ne[N], idx;
+int dist[N],cnt[N];
+bool st[N];
+
+void add(int a, int b, int c)
+{
+    e[idx] = b, w[idx] = c, ne[idx] = h[a], h[a] = idx ++ ;
+}
+
+int spfa()
+{
+	queue<int> q;
+	for(int i=1;i<=n;i++)
+	{
+		st[i]=true;
+		q.push(i);
+	}
+	
+    while (q.size())
+    {
+        int t = q.front();
+        q.pop();
+
+        st[t] = false;
+
+        for (int i = h[t]; i != -1; i = ne[i])
+        {
+            int j = e[i];
+            if (dist[j] > dist[t] + w[i])
+            {
+                dist[j] = dist[t] + w[i];
+                cnt[j]=cnt[t]+1;
+                
+                if(cnt[j]>=n) return true;
+                if (!st[j])
+                {
+                    q.push(j);
+                    st[j] = true;
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
+int main()
+{
+    scanf("%d%d", &n, &m);
+
+    memset(h, -1, sizeof h);
+
+    while (m -- )
+    {
+        int a, b, c;
+        scanf("%d%d%d", &a, &b, &c);
+        add(a, b, c);
+    }
+
+	if(spfa()) puts("Yes");
+	else puts("No");
+
+    return 0;
+}
+```
+
+
+
+### Bellman-Ford算法和SPFA算法小结
+
+
+
+### Floyd算法
+
+```c++
+#include<iostream>
+#include<algorithm>
+#include<cstring>
+using namespace std;
+const int N=210,INF=1e9;
+int n,m,Q;
+int d[N][N];
+
+void floyd()
+{
+	for(int k=1;k<=n;k++)
+		for(int i=1;i<=n;i++)
+			for(int j=1;j<=n;j++)
+				d[i][j]=min(d[i][j],d[i][k]+d[k][j]);
+}
+
+int main()
+{
+	cin>>n>>m>>Q;
+	
+	for(int i=1;i<=n;i++)
+		for(int j=1;j<=n;j++)
+			if(i==j) d[i][j]=0;
+			else d[i][j]=INF;
+			
+	while(m--)
+	{
+		int a,b,w;
+		cin>>a>>b>>w;
+		
+		d[a][b]=min(d[a][b],w);
+	}
+	
+	floyd();
+	
+	while(Q--)
+	{
+		int a,b;
+		cin>>a>>b;
+		if(d[a][b]>INF/2) puts("impossible");
+		else printf("%d\n",d[a][b]);
+	}
+	
+	return 0; 
+}
+```
+
+
+
+## 6、最小生成树
+
+### 最小生成树算法大纲
+
+![最小生成树算法大纲](img/最小生成树算法大纲.png)
+
+- 一般来说稀疏图用克鲁斯卡尔算法，稠密图用朴素版得普利姆算法。堆优化版的普利姆算法一般不会用到
+
+
+
+### 最小生成树两种算法思想的视频讲解
+
+<iframe src="//player.bilibili.com/player.html?aid=47042691&bvid=BV1Eb41177d1&cid=82389264&page=1" scrolling="no" border="0" frameborder="no" height="600" framespacing="0" allowfullscreen="true"> </iframe>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### 朴素Prim算法
+
+```c++
+#include<iostream>
+#include<algorithm>
+#include<cstring>
+using namespace std;
+
+const int N=510,INF=0x3f3f3f3f;
+
+int n,m;
+int g[N][N];
+int dist[N];
+bool st[N];
+
+int prim()
+{
+	memset(dist,0x3f,sizeof(dist));
+	
+	int res=0;
+	
+	for(int i=0;i<n;i++)
+	{
+		int t=-1;
+		for(int j=1;j<=n;j++)
+			if(!st[j]&&(t==-1||dist[t]>dist[j])) t=j;
+			
+		if(i&&dist[t]==INF) return INF;
+		if(i) res+=dist[t];
+		
+		for(int j=1;j<=n;j++) dist[j]=min(dist[j],g[t][j]);
+		
+		st[t]=true;
+	}
+	
+	return res;
+}
+
+int main()
+{
+	cin>>n>>m;
+	
+	memset(g,0x3f,sizeof(g));
+	
+	while(m--)
+	{
+		int a,b,c;
+		cin>>a>>b>>c;
+		g[a][b]=g[b][a]=min(g[a][b],c);
+	}
+	
+	int t=prim();
+	
+	if(t==INF) puts("impossible");
+	else printf("%d\n",t);
+	return 0;
+}
+```
+
+
+
+- 注意点：
+
+1. 与`dijkstra`不同，`prim`需要迭代`n`次；
+2. 最小生成树是针对无向图的，所以在读入边的时候，需要赋值两次；
+3. 要先累加再更新，避免t有自环，影响答案的正确性。后更新不会影响后面的结果么？不会的，因为`dist[i]`为`i`到集合`S`的距离，当`t`放入集合后，其`dist[t]`就已经没有意义了，再更新也不会影响答案的正确性；
+4. 需要特判一下第一次迭代，在我们没有做特殊处理时，第一次迭代中所有点到集合`S`的距离必然为无穷大，而且不会进行更新(也没有必要)，所以不需要将这条边(第一次迭代时，找到的距离集合`S`最短的边)累加到答案中，也不能认定为图不连通；
+5. 如果需要设置起点为`i`的话，在初始化`dist`数组之后，`dist[i] = 0`即可，这样也可以省去每轮迭代中的两个`if`判断。
+
+
+
+### Kruskal算法
+
+
+
+## 7、二分图
+
+### 二分图算法大纲
+
+![二分图算法大纲](img/二分图算法大纲.png)
+
+
+
+### 染色法
+
+
+
+### 匈牙利算法
 
