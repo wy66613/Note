@@ -2478,7 +2478,6 @@ void add(int x,int y,int c)
     // 有重边也不要紧，假设1->2有权重为2和3的边，再遍历到点1的时候2号点的距离会更新两次放入堆中
     // 这样堆中会有很多冗余的点，但是在弹出的时候还是会弹出最小值2+x（x为之前确定的最短路径），
     // 并标记st为true，所以下一次弹出3+x会continue不会向下执行。
-    w[idx] = c;
 	e[idx]=y,w[idx]=c,ne[idx]=h[x],h[x]=idx++;
 }
 
@@ -2555,7 +2554,7 @@ int main()
 // 任意存储方式，只要能遍历到所有的边
 #include<cstring>
 #include<iostream>
-#include<algorithm>
+
 using namespace std;
 
 const int N=510,M=10010;
@@ -2611,7 +2610,6 @@ int main()
 ```c++
 #include <cstring>
 #include <iostream>
-#include <algorithm>
 #include <queue>
 
 using namespace std;
@@ -2764,10 +2762,6 @@ int main()
     return 0;
 }
 ```
-
-
-
-### Bellman-Ford算法和SPFA算法小结
 
 
 
@@ -2925,6 +2919,9 @@ int main()
 
 
 ### Kruskal算法
+
+```c++
+```
 
 
 
