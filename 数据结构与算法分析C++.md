@@ -1373,7 +1373,7 @@ int main()
 
 using namespace std;
 
-const int N=100010;
+const int N=1e5+10;
 
 int n,m;
 int p[N]; // father数组，存储的是每个元素的父节点
@@ -2921,7 +2921,96 @@ int main()
 ### Kruskal算法
 
 ```c++
+#include<iostream>
+#include<algorithm>
+
+using namespace std;
+
+const int N=1e5+10,M=2e5+10,INF=0x3f3f3f3f;
+
+int n,m;
+int p[N];
+
+struct Edge
+{
+	int a,b,w;
+	
+	bool operator< (const Edge &W) const // 重载小于符号，排序是依据边的权来排序 
+	{
+		return w<W.w;
+	}
+}edges[M];
+
+int find(int x)
+{
+	if(p[x]!=x) p[x]=find(p[x]);
+	return p[x];
+}
+
+int kruskal()
+{
+	sort(edges,edges+m);
+	
+	for(int i=1;i<=n;i++) p[i]=i;
+	
+	int res=0,cnt=0; //　res表示最小生成树中所有边权之和，cnt表示边的数量 
+	for(int i=0;i<m;i++)
+	{
+		int a=edges[i].a,b=edges[i].b,w=edges[i].w;
+		
+        // 判断是不是在一个树（连通块）中
+		a=find(a),b=find(b);
+		if(a!=b)
+		{
+			p[a]=b;
+			res+=w;
+			cnt++;
+		}
+	}
+	
+	if(cnt<n-1) return INF;
+	return res;
+}
+
+int main()
+{
+	cin>>n>>m;
+	
+	for(int i=0;i<m;i++)
+	{
+		int a,b,w;
+		cin>>a>>b>>w;
+		edges[i]={a,b,w};
+	}
+	
+	int t=kruskal();
+	
+	if(t==INF) puts("impossible");
+	else printf("%d\n",t);
+	
+	return 0;
+}
 ```
+
+
+
+- 算法图解
+
+1. 我们看一下这个图，把所有的边进行排序，先假设把所有边先隐藏掉，排完序后的边的权值是：10 12 14 16 18 22 24 25 28；
+   我们先找到的是权值10的边的两个顶点是0和5，先将0和5这两条边合在一个集合里面，并且连上一条边。
+   ![kruskal算法图解步骤1](img/kruskal算法图解步骤1.png)
+2. 找到第二个最小的边的权重是12，连接的是2和3，现在我们把这两条边连起来，并且合并在一个集合里面。
+   ![kruskal算法图解步骤2](img/kruskal算法图解步骤2.png)
+3. 同理，把1和6连接起来并合并
+   ![kruskal算法图解步骤3](img/kruskal算法图解步骤3.png)
+4. 同理，把1和2连接起来并合并
+   ![kruskal算法图解步骤4](img/kruskal算法图解步骤4.png)
+5. 这个时候权值是18，注意一下，因为6和3已经在一个集合里面，我们就直接跳过，不用处理。
+6. 下一个连接和合并是3和4
+   ![kruskal算法图解步骤5](img/kruskal算法图解步骤5.png)
+7. 注意一下，此时4和6在一个集合里面了，我们直接跳过
+8. 我们连接并合并4和5两个顶点
+   ![kruskal算法图解步骤6](img/kruskal算法图解步骤6.png)
 
 
 
@@ -2933,9 +3022,162 @@ int main()
 
 
 
-### 染色法
+### 染色法（判定是不是二分图）
+
+- 二分图定义：能将所有的点分为两个集合，使得所有的边都是在集合之间的，集合内部没有边。
+
+
+
+- 二分图的重要性质：当前仅当图中不含奇数环才为二分图。
+
+
+
+- 算法实现思路：
+
+1. 我们规定1或2代表一个点属于两个集合。
+2. 首先我们任选一个点染色成1，把和它相连的所有点染色成2。
+3. 然后再把所有和染色成2的点相邻的点染色成1。
+4. 在每一次染色点时首先要判断一下这个点是否被染色过，如果被染色过并且和上一个点颜色相同，则代表染色失败，该图不是二分图。
+
+
+
+```c++
+#include<iostream>
+#include<algorithm>
+#include<cstring>
+using namespace std;
+
+const int N=1e5+10,M=2e5+10;
+
+int n,m;
+int h[N],e[M],ne[M],idx;
+int color[N];
+
+void add(int a,int b)
+{
+	e[idx]=b,ne[idx]=h[a],h[a]=idx++;
+}
+
+bool dfs(int u,int c)
+{
+	color[u]=c;
+	
+	for(int i=h[u];i!=-1;i=ne[i])
+	{
+		int j=e[i];
+		if(!color[j])
+		{
+			if(!dfs(j,3-c)) return false;
+		}
+		else if(color[j]==c) return false;
+	}
+	return true;
+}
+
+int main()
+{
+	cin>>n>>m;
+	
+	memset(h,-1,sizeof(h));
+	
+	while(m--)
+	{
+		int a,b;
+		cin>>a>>b;
+		add(a,b),add(b,a);
+	}
+	
+	bool flag=true;
+	for(int i=1;i<=n;i++)
+		if(!color[i])
+		{
+			if(!dfs(i,1))
+			{
+				flag=false;
+				break;	
+			}	
+		}
+	
+	if(flag) puts("Yes");
+	else puts("No");
+		
+	return 0;
+}
+```
 
 
 
 ### 匈牙利算法
 
+- 算法思想
+
+遍历所有男生
+让该男生考虑所有心动女生
+如果当前女生单身，或者该女生的对象找了备胎，该女生就接受该男生
+
+
+
+```c++
+#include<iostream>
+#include<algorithm>
+#include<cstring>
+
+using namespace std;
+const int N=510,M=1e5+10;
+int n1,n2,m;
+int h[N],e[M],ne[M],idx;
+int match[N];
+bool st[N];
+
+int add(int x,int y)
+{
+	e[idx]=y,ne[idx]=h[x],h[x]=idx++;
+}
+
+bool find(int x)
+{
+	for(int i=h[x];i!=-1;i=ne[i])
+	{
+		int j=e[i];
+		if(!st[j])
+		{
+			st[j]=true;
+			if(match[j]==0||find(match[j]))
+			{
+				match[j]=x;
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+int main()
+{
+	cin>>n1>>n2>>m;
+	memset(h,-1,sizeof(h));
+	
+	while(m--)
+	{
+		int a,b;
+		cin>>a>>b;
+		add(a,b);
+	}
+	
+	int res=0; // 存储匹配的数量
+	for(int i=1;i<=n1;i++)
+	{
+		memset(st,false,sizeof(st));
+		if(find(i)) res++;
+			
+	} 
+	
+	printf("%d\n",res);
+	
+	return 0;
+}
+```
+
+
+
+​	
