@@ -2833,20 +2833,6 @@ int main()
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ### 朴素Prim算法
 
 ```c++
@@ -3180,4 +3166,439 @@ int main()
 
 
 
-​	
+# 四、数学知识
+
+## 1、数论
+
+### 质数的判定——试除法
+
+- 数学知识：
+
+如果`n`能整除`d`，那么`d/n`也一定能整除`d`。
+
+
+
+```c++
+#include<iostream>
+#include<algorithm>
+
+using namespace std;
+
+bool is_prime(int n)
+{
+	if(n<2) return false;
+	for(int i=2;i<=n/i;i++) // 将时间复杂度从O(N)优化到N(sqrt(N))
+		if(n%i==0) return false;
+	return true;
+}
+
+int main()
+{
+	int n;
+	cin>>n;
+	while(n--)
+	{
+		int m;
+		cin>>m;
+		if(is_prime(m)) puts("Yes");
+		else puts("No");
+	}
+	return 0;
+}
+```
+
+
+
+### 分解质因数——试除法
+
+- 数学知识：
+
+1. 质因子定义：能**整除**给定正整数的**质数**
+2. n中最多只包含一个大于`sqrt(n)`的质因子
+
+
+
+```c++
+#include<iostream>
+#include<algorithm>
+
+using namespace std;
+
+void divede(int n)
+{
+	for(int i=2;i<=n/i;i++)
+		if(n%i==0) // i一定是质数
+		{
+			int s=0;
+			while(n%i==0)
+			{
+				n/=i;
+				s++;
+			}
+			printf("%d %d\n",i,s);
+		}
+		
+	// n中最多只包含一个大于sqrt(n)的质因子，因此需要对该质因子做额外处理 
+	if(n>1) printf("%d %d\n",n,1);
+	puts("");
+}
+
+int main()
+{
+	int n;
+	cin>>n;
+	while(n--)
+	{
+		int x;
+		cin>>x;
+		divede(x);
+	}
+	
+	return 0;
+}
+```
+
+
+
+### 筛质数
+
+#### 朴素做法：
+
+逐步筛去每个数的倍数的数，这样筛过后剩下的数就为质数。时间复杂度为O(nlogn)。
+
+
+
+``` 
+#include<iostream>
+#include<algorithm>
+
+using namespace std;
+
+const int N=1e6+10;
+
+int primes[N],cnt; // 存质数 
+bool st[N]; // 存储是否被筛过 
+
+void get_primes(int n)
+{
+	for(int i=2;i<=n;i++)
+	{
+		if(!st[i])
+		{
+			primes[cnt++]=n;
+		}
+		
+		for(int j=i+i;j<=n;j+=i) st[j]=true; // 删除倍数 
+	}
+}
+
+int main()
+{
+	int n;
+	cin>>n;
+	
+	get_primes(n);
+	
+	cout<<cnt<<endl;
+	
+	return 0;	
+} 
+```
+
+
+
+#### 埃氏筛法（优化做法）：
+
+不需要将每个数的倍数都删掉，只需要将质数的倍数删掉即可，因此可将第二个for循环放到判断语句里面去。粗略估计时间复杂度为O(n)。
+
+> 质数定理：
+>
+> 1~n质数的个数为：
+> $$
+> n\over{{\ln}n}
+> $$
+> 
+
+
+
+```c++
+#include<iostream>
+#include<algorithm>
+
+using namespace std;
+
+const int N=1e6+10;
+
+int primes[N],cnt; // 存质数 
+bool st[N]; // 存储是否被筛过 
+
+void get_primes(int n)
+{
+	for(int i=2;i<=n;i++)
+	{
+		if(!st[i])
+		{
+			primes[cnt++]=n;
+			for(int j=i+i;j<=n;j+=i) st[j]=true; // 删除倍数 
+        }
+	}
+}
+
+int main()
+{
+	int n;
+	cin>>n;
+	
+	get_primes(n);
+	
+	cout<<cnt<<endl;
+	
+	return 0;	
+} 
+```
+
+
+
+#### 线性筛法（常用）：
+
+```c++
+#include<iostream>
+#include<algorithm>
+using namespace std;
+
+const int N=1e6+10;
+
+int primes[N],cnt;
+bool st[N];
+
+void get_primes(int n)
+{
+	for(int i=2;i<=n;i++)
+	{
+		if(!st[i]) primes[cnt++]=i;
+		for(int j=0;primes[j]<=n/i;j++)
+		{
+			st[primes[j]*i]=true;
+			if(i%primes[j]==0) break; // primes[j]一定是i的最小质因子 
+		}
+	}
+}
+
+int main()
+{
+	int n;
+	cin>>n;
+	
+	get_primes(n);
+	
+	cout<<cnt<<endl;
+	
+	return 0;
+}
+```
+
+
+
+- 对第二个for循环的说明：
+
+![筛质数线性筛法说明](img/筛质数线性筛法说明.png)
+
+
+
+### 试除法求约数
+
+```c++
+#include<iostream>
+#include<vector>
+#include<algorithm>
+
+using namespace std;
+
+vector<int> get_divisors(int n)
+{
+	vector<int> res;
+	
+	for(int i=1;i<=n/i;i++) // 从小到大枚举所有数，但只枚举小的那一个 
+		if(n%i==0)
+		{
+			res.push_back(i);
+			if(i!=n/i) res.push_back(n/i); // 处理边界情况 
+		}
+	
+	sort(res.begin(),res.end());
+	return res;
+}
+
+int main()
+{
+	int n;
+	cin>>n;
+	while(n--)
+	{
+		int x;
+		cin>>x;
+		auto res=get_divisors(x);
+		for(auto t:res) cout<<t<<' ';
+		cout<<endl;
+	}
+	return 0;
+	
+}
+```
+
+
+
+### 约数个数
+
+- 公式
+
+如果一个数N分解质因数之后的结果为：
+$$
+N=p_1^{α_1}·p_2^{α_2}···p_k^{α_k}
+$$
+则N的约数个数为：
+$$
+(α_1+1)(α_2+1)···(α_k+1)
+$$
+
+```c++
+// 求所有约数个数，最后结果要模上1e9+7
+
+#include<iostream>
+#include<algorithm>
+#include<unordered_map>
+
+using namespace std;
+
+typedef long long LL;
+
+const int mod=1e9+7;
+
+int main()
+{
+	int n;
+	cin>>n;
+	
+	unordered_map<int,int> primes;
+	while(n--)
+	{
+		int x;
+		cin>>x;
+		
+		for(int i=2;i<=x/i;i++)
+			while(x%i==0)
+			{
+				x/=i;
+				primes[i]++;
+			}
+			
+		if(x>1) primes[x]++;
+	}
+	
+	LL res=1;
+	for(auto prime:primes) res=res*(prime.second+1)%mod;
+	
+	cout<<res<<endl; 
+	
+	return 0;
+}
+```
+
+
+
+### 约数之和
+
+- 公式
+
+如果一个数N分解质因数之后的结果为：
+$$
+N=p_1^{α_1}·p_2^{α_2}···p_k^{α_k}
+$$
+则N的约数之和为：
+$$
+(p_1^0+p_1^1+···+p_1^{α_1})···(p_k^0+p_k^1+···+p_k^{α_k})
+$$
+
+```c++
+#include<iostream>
+#include<algorithm>
+#include<unordered_map>
+
+using namespace std;
+
+typedef long long LL;
+
+const int mod=1e9+7;
+
+int main()
+{
+	int n;
+	cin>>n;
+	
+	unordered_map<int,int> primes;
+	while(n--)
+	{
+		int x;
+		cin>>x;
+		
+		for(int i=2;i<=x/i;i++)
+			while(x%i==0)
+			{
+				x/=i;
+				primes[i]++;
+			}
+			
+		if(x>1) primes[x]++;
+	}
+	
+	LL res=1;
+	for(auto prime:primes)
+	{
+		int p=prime.first,a=prime.second; // p表示底数，a表示指数
+		LL t=1;
+		while(a--) t=(t*p+1)%mod;
+		res=res*t%mod; 
+	}
+	
+	cout<<res<<endl; 
+	
+	return 0;
+}
+```
+
+
+
+### 欧几里得算法（辗转相除法）
+
+- 算法原理解释：
+
+![欧几里得算法解释](img/欧几里得算法解释.png)
+
+
+
+```c++
+#include<iostream>
+
+using namespace std;
+
+// 欧几里得算法模板 
+int gcd(int a,int b)
+{
+	return b?gcd(b,a%b):a; // 返回 a 和 b 的最大公约数 
+}
+
+int main()
+{
+	int n;
+	cin>>n;
+	while(n--)
+	{
+		int a,b;
+		scanf("%d%d",&a,&b);
+		printf("%d\n",gcd(a,b));
+	}
+	
+	return 0;
+}
+```
+
