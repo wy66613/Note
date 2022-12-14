@@ -3602,3 +3602,319 @@ int main()
 }
 ```
 
+
+
+### 欧拉函数
+
+如果一个数N分解质因数之后的结果为：
+$$
+N=p_1^{α_1}·p_2^{α_2}···p_k^{α_k}
+$$
+则欧拉函数可以表示为：
+$$
+\varphi(n)=N·(1-{1\over{p_1}})···(1-{1\over{p_k}})
+$$
+![欧拉函数的推导过程](img/欧拉函数的推导过程.png)
+
+```c++
+#include<iostream>
+#include<algorithm>
+
+using namespace std;
+
+int main()
+{
+	int n;
+	cin>>n;
+	
+	while(n--)
+	{
+		int a;
+		cin>>a;
+		
+		int res=a;
+		for(int i=2;i<=a/i;i++) // 分解质因子
+			if(a%i==0)
+			{
+				res=res/i*(i-1); // 整除，不允许有小数，对公式变形一下
+				while(a%i==0) a/=i;	
+			} 
+		if(a>1) res=res/a*(a-1); // 边界处理
+		
+		cout<<res<<endl; 
+	}
+	
+	return 0;
+}
+```
+
+
+
+此算法瓶颈在于分解质因子，因此算法的时间复杂度为O(n·sqrt(N))。
+
+可以用线性筛法来优化，使时间复杂度降为O(N)。
+
+
+
+```c++
+#include<iostream>
+#include<algorithm>
+
+using namespace std;
+
+typedef long long LL;
+
+const int N=1e6+10;
+
+int primes[N],cnt;
+bool st[N];
+int phi[N];
+
+LL get_eulers(int n)
+{
+	phi[1]=1; 
+	for(int i=2;i<=n;i++)
+	{
+		if(!st[i])
+		{
+			primes[cnt++]=i;
+			phi[i]=i-1; // i是质数，1到i中有i-1个数与i互质 
+		}
+		for(int j=0;primes[j]<=n/i;j++)
+		{
+			st[primes[j]*i]=true;
+			if(i%primes[j]==0) // primes[j]是i的一个质因子
+			{
+				phi[primes[j]*i]=primes[j]*phi[i];  
+				break;
+			}
+			phi[primes[j]*i]=phi[i]*(primes[j]-1); // i%primes[j]!=0时 
+		}
+	}
+	
+	LL res=0;
+	for(int i=1;i<=n;i++) res+=phi[i];
+	return res;
+}
+
+int main()
+{
+	int n;
+	cin>>n;
+	
+	cout<<get_eulers(n)<<endl;
+	
+	return 0;
+}                
+```
+
+
+
+### 欧拉定理
+
+![欧拉定理](img/欧拉定理.png)
+
+
+
+### 快速幂
+
+```c++
+#include<iostream>
+#include<algorithm>
+
+using namespace std;
+
+typedef long long LL;
+
+int qmi(int a,int k,int p) // a的k次方模p
+{
+	int res=1;
+	while(k)
+	{
+		if(k&1) res=(LL)res*a%p; // k&1 判断k的个位是否为1
+		k>>=1;
+		a=(LL)a*a%p; 
+	}
+	return res;
+} 
+
+int main()
+{
+	int n;
+	scanf("%d",&n);
+	while(n--)
+	{
+		int a,k,p;
+		scanf("%d%d%d",&a,&k,&p);
+		
+		printf("%d\n",qmi(a,k,p));
+	}
+	return 0;
+}
+```
+
+
+
+- 快速幂求逆元
+
+> 存在一个整数x，使得a/b同余于a*x(mod m)，则称x为b的模m乘法逆元。
+
+
+
+- 逆元的重要性质
+
+$$
+b·b^{-1}≡1 (mod\ m)
+$$
+
+
+
+![求逆元的方法](img/求逆元的方法.png)
+
+
+
+```c++
+#include<iostream>
+#include<algorithm>
+
+using namespace std;
+
+typedef long long LL;
+
+int qmi(int a,int k,int p) // a的k次方模p
+{
+	int res=1;
+	while(k)
+	{
+		if(k&1) res=(LL)res*a%p; // k&1 判断k的个位是否为1
+		k>>=1;
+		a=(LL)a*a%p; 
+	}
+	return res;
+} 
+
+int main()
+{
+	int n;
+	scanf("%d",&n);
+	while(n--)
+	{
+		int a,p; // p为质数，费马定理
+		scanf("%d%d",&a,&p);
+		
+		int res=qmi(a,p-2,p); 
+		if(a%p) printf("%d\n",res);
+		else puts("impossible");
+	}
+	
+	return 0;
+}
+```
+
+
+
+### 扩展欧几里得算法
+
+![扩展欧几里得算法](img/扩展欧几里得算法.png)
+
+
+
+```c++
+// 扩展欧几里得算法
+
+#include<iostream>
+
+using namespace std;
+
+int exgcd(int a,int b,int& x,int& y)
+{
+	if(!b)
+	{
+		x=1,y=0;
+		return a; 
+	}
+	
+	int d = exgcd(b,a%b,y,x); // d表示最大公约数
+	
+	y-=a/b*x;
+	 
+	return d;
+}
+
+int main()
+{
+	int n;
+	scanf("%d",&n);
+	while(n--)
+	{
+		int a,b,x,y;
+		scanf("%d%d",&a,&b);
+		
+		exgcd(a,b,x,y);
+		
+		printf("%d %d\n",x,y);
+	}
+	return 0;
+} 
+```
+
+
+
+- 求解线性同余方程
+
+![求解线性同余方程](img/求解线性同余方程.png)
+
+
+
+```c++
+//n组数据，求解 a*x≡b(mod m)
+
+#include<iostream>
+
+typedef long long LL;
+using namespace std;
+
+int exgcd(int a,int b,int& x,int &y)
+{
+	if(!b)
+	{
+		x=1,y=0;
+		return a;
+	}
+	
+	int d=exgcd(b,a%b,y,x);
+	y-=a/b*x;
+	
+	return d;
+}
+
+int main()
+{
+    int n;
+    scanf("%d",&n);
+    
+    while(n--)
+    {
+    	int a,b,m;
+    	scanf("%d%d%d",&a,&b,&m);
+    	
+    	int x,y;
+    	int d=exgcd(a,m,x,y);
+    	if(b%d) puts("impossible");
+    	else printf("%d\n",(LL)x*(b/d)%m); // %m 是为了保证数据在int范围内
+	}
+    return 0;
+}
+```
+
+
+
+### 中国剩余定理
+
+![中国剩余定理](img/中国剩余定理.png)
+
+
+
+```c++
+```
+
