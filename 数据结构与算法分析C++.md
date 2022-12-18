@@ -237,10 +237,10 @@ LL mergesort(int *arr,int l,int r)
 {
 	if(l==r) return 0;
     int mid=(l+r)/2;
-    LL res]=mergesort(arr,l,mid)+mergesort(arr,mid+1,r);
+    LL res=mergesort(arr,l,mid)+mergesort(arr,mid+1,r);
     
     int k=0,tmp[100010],i=l,j=mid+1;
-    while(i<j)
+    while(i<mid&&j<=r)
     {
         if(arr[i]<=arr[j]) tmp[k++]=arr[i++];
         else
@@ -611,7 +611,7 @@ using namespace std;
 
 const int N=100010;
 int n,m;
-int s[N],b[N];
+int s[N],b[N]; // b为差分数组
 
 void insert(int l,int r,int c)
 {
@@ -3168,9 +3168,7 @@ int main()
 
 # 四、数学知识
 
-## 1、数论
-
-### 质数的判定——试除法
+## 质数的判定——试除法
 
 - 数学知识：
 
@@ -3209,7 +3207,7 @@ int main()
 
 
 
-### 分解质因数——试除法
+## 分解质因数——试除法
 
 - 数学知识：
 
@@ -3260,9 +3258,9 @@ int main()
 
 
 
-### 筛质数
+## 筛质数
 
-#### 朴素做法：
+### 朴素做法：
 
 逐步筛去每个数的倍数的数，这样筛过后剩下的数就为质数。时间复杂度为O(nlogn)。
 
@@ -3307,7 +3305,7 @@ int main()
 
 
 
-#### 埃氏筛法（优化做法）：
+### 埃氏筛法（优化做法）：
 
 不需要将每个数的倍数都删掉，只需要将质数的倍数删掉即可，因此可将第二个for循环放到判断语句里面去。粗略估计时间复杂度为O(n)。
 
@@ -3359,7 +3357,7 @@ int main()
 
 
 
-#### 线性筛法（常用）：
+### 线性筛法（常用）：
 
 ```c++
 #include<iostream>
@@ -3405,7 +3403,7 @@ int main()
 
 
 
-### 试除法求约数
+## 试除法求约数
 
 ```c++
 #include<iostream>
@@ -3448,7 +3446,7 @@ int main()
 
 
 
-### 约数个数
+## 约数个数
 
 - 公式
 
@@ -3506,7 +3504,7 @@ int main()
 
 
 
-### 约数之和
+## 约数之和
 
 - 公式
 
@@ -3568,7 +3566,7 @@ int main()
 
 
 
-### 欧几里得算法（辗转相除法）
+## 欧几里得算法（辗转相除法）
 
 - 算法原理解释：
 
@@ -3604,7 +3602,7 @@ int main()
 
 
 
-### 欧拉函数
+## 欧拉函数
 
 如果一个数N分解质因数之后的结果为：
 $$
@@ -3710,13 +3708,13 @@ int main()
 
 
 
-### 欧拉定理
+## 欧拉定理
 
 ![欧拉定理](img/欧拉定理.png)
 
 
 
-### 快速幂
+## 快速幂
 
 ```c++
 #include<iostream>
@@ -3813,7 +3811,7 @@ int main()
 
 
 
-### 扩展欧几里得算法
+## 扩展欧几里得算法
 
 ![扩展欧几里得算法](img/扩展欧几里得算法.png)
 
@@ -3909,12 +3907,367 @@ int main()
 
 
 
-### 中国剩余定理
+## 中国剩余定理
 
 ![中国剩余定理](img/中国剩余定理.png)
 
 
 
 ```c++
+```
+
+
+
+## 高斯消元
+
+### 高斯消元解线性方程组
+
+![高斯消元解线性方程组1](img/高斯消元解线性方程组1.png)
+
+![高斯消元解线性方程组2](img/高斯消元解线性方程组2.png)
+
+
+
+```c++
+#include<iostream>
+#include<algorithm>
+#include<cmath> // 求绝对值函数 
+using namespace std;
+
+const int N=110;
+const double eps=1e-6;
+
+int n;
+double a[N][N]; // 系数矩阵 
+
+int gauss()
+{
+	int c,r;
+	for(c=0,r=0;c<n;c++,r++)  
+	{
+		int t=r;
+		for(int i=r;i<n;i++)
+			if(fabs(a[i][c])>fabs(a[t][c])) t=i;
+		
+		if(fabs(a[t][c])<eps) continue; // 0的浮点数存在精度问题，判0相当于比一个很小的数还小
+		
+		// 把最大的一行换到最上面 
+		for(int i=c;i<=n;i++) swap(a[t][i],a[r][i]);
+		
+		// 把该行第一个数变为0 
+		for(int i=n;i>=c;i--) a[r][i]/=a[r][c];
+		
+		// 将下面所有行的第C列消为0 
+		for(int i=r+1;i<n;i++)
+			if(fabs(a[i][c])>eps)
+				for(int j=n;j>=c;j--)
+					a[i][j]-=a[r][j]*a[i][c]; 
+	}
+	
+	if(r<n) // 两种情况，无穷解和无解 
+	{
+		for(int i=r;i<=n;i++)
+			if(fabs(a[i][n]>eps))
+				return 2; // 无解 
+		return 1; // 无穷解 
+	}
+	
+	return 0;
+}
+
+int main()
+{
+	cin>>n;
+	for(int i=0;i<n;i++)
+		for(int j=0;j<n+1;j++)
+			cin>>a[i][j];
+			
+	int t=gauss();
+	if(t==0)
+	{
+		for(int i=0;i<n;i++) printf("%.2lf\n",a[i][n]);
+	}
+	else if(t==1) puts("Infinite group solutions");
+	else puts("No solution");
+	
+	return 0;
+}
+```
+
+
+
+### 高斯消元解异或线性方程组
+
+```c++
+```
+
+
+
+## 求组合数
+
+- 注意数据范围选择不同的算法
+
+
+
+#### 组合数Ⅰ
+
+![acwing885组合数1](img/acwing885组合数1.png)
+
+
+
+- 预处理递推式，如下：
+
+$$
+C^b_a=C_{a-1}^{b-1}+C_{a-1}^b
+$$
+
+```c++
+#include<iostream>
+#include<algorithm>
+
+using namespace std;
+
+const int N=2010,mod=1e9+7;
+
+int c[N][N];
+
+void init()
+{
+	for(int i=0;i<N;i++)
+		for(int j=0;j<=i;j++)
+			if(!j) c[i][j]=1;
+			else c[i][j]=(c[i-1][j]+c[i-1][j-1])%mod;
+}
+
+int main()
+{
+	init();
+	
+	int n;
+	scanf("%d",&n);
+	
+	while(n--)
+	{
+		int a,b;
+		scanf("%d%d",&a,&b);
+		printf("%d\n",c[a][b]);
+	}
+	
+	return 0;
+}
+```
+
+
+
+#### 组合数Ⅱ
+
+![acwing885组合数2.png](img/acwing885组合数2.png)
+
+- 预处理阶乘
+
+![求组合数Ⅱ](img/求组合数Ⅱ.png)
+
+
+
+```c++
+#include<iostream>
+#include<algorithm>
+
+using namespace std;
+
+typedef long long LL;
+const int N=1e5+10,mod=1e9+7;
+
+int fact[N],infact[N];
+
+int qmi(int a,int k,int p)
+{
+	int res=1;
+	while(k)
+	{
+		if(k&1) res=(LL)res*a%p;
+		a=(LL)a*a%p;
+		k>>=1;
+	}
+	return res;
+}
+
+int main()
+{
+	fact[0]=infact[0]=1;
+	for(int i=1;i<=N;i++)
+	{
+		fact[i]=(LL)fact[i-1]*i%mod;
+		infact[i]=(LL)infact[i-1]*qmi(i,mod-2,mod)%mod;
+	}
+	
+	int n;
+	scanf("%d",&n);
+	while(n--)
+	{
+		int a,b;
+		scanf("%d%d",&a,&b);
+		printf("%d\n",(LL)fact[a]*infact[b]%mod*infact[a-b]);
+	}
+	
+	return 0;
+}
+```
+
+
+
+#### 组合数Ⅲ
+
+![acwing885组合数3.png](img/acwing885组合数3.png)
+
+
+
+- lucas定理：
+
+$$
+C^b_a ≡C^{b\ mod\ p}_{b\ mod\ p}·C^{b/p}_{a/p}\ (mod\ p)
+$$
+
+
+
+```c++
+#include<iostream>
+#include<algorithm>
+
+using namespace std;
+
+typedef long long LL;
+
+int p;
+
+int qmi(int a,int k)
+{
+	int res=1;
+	while(k)
+	{
+		if(k&1) res=(LL)res*a%p;
+		a=(LL) a*a%p;
+		k>>=1;
+	}
+	return res;
+}
+
+int C(int a,int b)
+{
+	int res=1;
+	for(int i=1,j=a;i<=b;i++,j--)
+	{
+		res=(LL)res*j%p;
+		res=(LL)res*qmi(i,p-2)%p;
+	}
+	return res;
+}
+
+int lucas(LL a,LL b)
+{
+	if(a<p&&b<p) return C(a,b);
+	return (LL)C(a%p,b%p)*lucas(a/p,b/p)%p;
+}
+
+int main()
+{
+	int n;
+	cin>>n;
+	while(n--)
+	{
+		LL a,b;
+		cin>>a>>b>>p;
+		cout<<lucas(a,b)<<endl;
+	}
+	
+	return 0;
+}
+```
+
+
+
+#### 组合数Ⅳ
+
+![acwing885组合数4.png](img/acwing885组合数4.png)
+
+![求组合数Ⅳ](img/求组合数Ⅳ.png)
+
+ 
+
+```c++
+#include<iostream>
+#include<algorithm>
+#include<vector>
+
+using namespace std;
+
+const int N=5010;
+
+int primes[N],cnt;
+int sum[N];
+bool st[N];
+
+void get_primes(int n)
+{
+	for(int i=2;i<=n;i++)
+	{
+		if(!st[i]) primes[cnt++]=i;
+		for(int j=0;primes[j]<=n/i;j++)
+		{
+			st[primes[j]*i]=true;
+			if(i%primes[j]==0) break;	
+		}	
+	}	
+}
+
+int get(int n,int p)
+{
+	int res=0;
+	while(n)
+	{
+		res+=n/p;
+		n/=p;
+	}
+	return res;
+}
+
+vector<int> mul(vector<int> a,int b)
+{
+	vector<int> c;
+	int t=0;
+	for(int i=0;i<a.size()||t;i++)
+	{
+		if(i<a.size()) t+=a[i]*b;
+		c.push_back(t%10);
+		t/=10;
+	}
+	return c;
+}
+
+
+int main()
+{
+	int a,b;
+	cin>>a>>b;
+	
+	get_primes(a);
+	
+	for(int i=0;i<cnt;i++)
+	{
+		int p=primes[i];
+		sum[i]=get(a,p)-get(b,p)-get(a-b,p);
+	}
+	
+	vector<int> res;
+	res.push_back(1);
+	
+	for(int i=0;i<cnt;i++)
+		for(int j=0;j<sum[i];j++)
+			res=mul(res,primes[i]);
+			
+	for(int i=res.size()-1;i>=0;i--) printf("%d",res[i]);
+	puts("");
+	return 0;
+}
 ```
 
