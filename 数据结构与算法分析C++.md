@@ -146,18 +146,40 @@ void swap2(int*arr, int i,int j)
 ### 快速排序
 
 ```c++
-void QuickSort(int* arr, int l, int r)
-{
-	if (l == r) return;
-	int x = arr[l], i = l - 1, j = r + 1;
-	while (i < j)
+#include<iostream>
+
+using namespace std;
+
+const int N=1e6+10;
+
+int q[N],n;
+
+void quicksort(int* q,int l,int r)
+{ 
+	if(l==r) return;
+	
+	int i=l-1,j=r+1,x=q[(l+r+1)/2]; // 注意边界
+	
+	while(i<j)
 	{
-		do i++; while (arr[i] < x);
-		do j--; while (arr[j] > x);
-		if (i < j) swap(arr[i], arr[j]);
+		while(q[++i]<x);
+		while(q[--j]>x);
+		if(i<j) swap(q[i],q[j]);
 	}
-	QuickSort(arr, l, j);
-	QuickSort(arr, j + 1, r);
+	
+	quicksort(q,l,i-1);
+	quicksort(q,i,r);
+}
+
+int main()
+{
+	cin>>n;
+	for(int i=0;i<n;i++) scanf("%d",&q[i]);
+	
+	quicksort(q,0,n-1);
+	
+	for(int i=0;i<n;i++) printf("%d ",q[i]);
+	return 0;
 }
 ```
 
@@ -1016,6 +1038,7 @@ void init()
 	idx=2;
 }
 
+// 在k位置的前面加入x
 void add(int k,int x)
 {
 	e[idx]=x;
@@ -1125,7 +1148,7 @@ using namespace std;
 const int N = 100010;
 
 int m;
-int q[N], hh, tt = -1; 
+int q[N], hh, tt = -1; // hh 为尾， tt 为头，尾进头出
 
 int main()
 {
@@ -1227,6 +1250,12 @@ int main()
 
 
 ## 3、KMP
+
+- 视频讲解
+
+<iframe src="//player.bilibili.com/player.html?aid=642197522&bvid=BV1AY4y157yL&cid=744834924&page=1" scrolling="no" border="0" frameborder="no" height="600" framespacing="0" allowfullscreen="true"> </iframe>
+
+
 
 ```c++
 #include <iostream>
@@ -1491,7 +1520,6 @@ x的左儿子节点为2x，右儿子节点为2x+1
 */
 
 #include<iostream>
-#include<algorithm>
 
 using namespace std;
 
@@ -2107,43 +2135,52 @@ int main()
 #include<cstring>
 #include<queue>
 using namespace std;
-const int N=110;
+
+const int N=120;
+
 int g[N][N];
-int f[N][N];
+int d[N][N]; // d记录长度，同时也记录是否访问过 
 int n,m;
+
+// 四个方向向量变化 
+int dx[4]={0,1,0,-1},dy[4]={-1,0,1,0};
+
 void bfs(int a,int b)
 {
-	queue<pair<int,int> > q; // 创建队列 
-	q.push({a,b}); // 起点加入队列 
-	while(!q.empty()) // 开始遍历地图 
+	memset(d,-1,sizeof(d));
+	d[1][1]=0; // 起点到它本身的距离为0 
+	
+	queue<pair<int,int> > q;
+	q.push({1,1});
+	while(!q.empty())
 	{
-		pair<int,int> start=q.front();
+		auto start=q.front();
 		q.pop();
-		g[start.first][start.second]=1; // 走过，打上标记
-		int dx[4]={0,1,0,-1},dy[4]={-1,0,1,0}; // 四个方向，分别为上右下左
-		for(int i=0;i<4;i++) // 四个方向遍历
+		
+		for(int i=0;i<4;i++)
 		{
+			// 得到当前点附近的点 
 			int x=start.first+dx[i],y=start.second+dy[i];
-			if(g[x][y]==0) // 能走且没有走过 
+			if(x>0&&x<=n&&y>0&&y<=m&&g[x][y]==0&&d[x][y]==-1)
 			{
-				g[x][y]=1;
-				f[x][y]=f[start.first][start.second]+1; // 距离+1 
-				q.push({x,y});	
-			}	
-		} 
+				d[x][y]=d[start.first][start.second]+1;
+				q.push({x,y});
+			}
+		}
 	}
-	cout<<f[n][m]; 
+	
+	cout<<d[n][m];
 }
 
 int main()
 {
-	memset(g,1,sizeof(g));
 	cin>>n>>m;
 	for(int i=1;i<=n;i++)
 		for(int j=1;j<=m;j++)
 			cin>>g[i][j];
-			
+	
 	bfs(1,1);
+	
 	return 0;
 }
 ```
@@ -2162,13 +2199,18 @@ int main()
 
 ### 深度优先遍历
 
+![树的dfs1](img/树的dfs1.png)
+
+![树的dfs2](img/树的dfs2.png)
+
+
+
 ```c++
 // 树的重心
+// 重心是指树中的一个结点，如果将这个点删除后，剩余各个连通块中点数的最大值最小，那么这个节点被称为树的重心。
 
 #include<iostream>
 #include<cstring>
-#include<cstdio>
-#include<algorithm>
 using namespace std;
 
 const int N=1e5+10,M=N*2;
@@ -2183,11 +2225,12 @@ void add(int a,int b)
 	e[idx]=b,ne[idx]=h[a],h[a]=idx++;	
 }
 
+// 返回以u为根的子树中节点的数量，包括根节点
 int dfs(int u)
 {
 	st[u]=true;
 	
-	int res=0,sum=0; // res存储每一个连通块中节点数目的最大值，sun存储以u为根的子树的大小
+	int res=0,sum=0; // res存储每一个连通块中节点数目的最大值，sum存储以u为根的子树的大小
 	for(int i=h[u];i!=-1;i=ne[i])
 	{
 		int j=e[i];
@@ -2209,7 +2252,7 @@ int main()
 	scanf("%d",&n);
 	memset(h,-1,sizeof(h));
 	
-	for(int i=0;i<n-1;i++)
+	for(int i=0;i<n-1;i++) // n个根有n-1条边
 	{
 		int a,b;
 		scanf("%d%d",&a,&b);
@@ -2232,7 +2275,6 @@ int main()
 
 #include<iostream>
 #include<cstring>
-#include<algorithm>
 #include<queue>
 using namespace std;
 const int N=1e5+10;
@@ -2294,11 +2336,11 @@ int main()
 
 - 注：只有有向图才有拓扑序列
 - 重要概念：**入度**和**出度**
+- 实现依据：在任一有向无环图中，必然存在入度为0的点
 
 ```c++
 #include<cstring>
 #include<iostream>
-#include<algorithm>
 
 using namespace std;
 
@@ -4270,4 +4312,101 @@ int main()
 	return 0;
 }
 ```
+
+## 
+
+## 容斥原理
+
+$$
+C^0_n+C^1_n+C^2_n+……+C^n_n=2^n
+$$
+
+```c++
+// 能被整除的数
+// 给定一个整数n和m个不同的质数，求出1~n中能被这m个质数中的至少一个数整除的整数有多少个
+// 用二进制数来表示选取的方案
+
+#include<iostream>
+using namespace std;
+
+typedef long long LL;
+
+const int N=20;
+
+int n,m;
+int p[N];
+
+int main()
+{
+	cin>>n>>m;
+	for(int i=0;i<m;i++) cin>>p[i];
+	
+	int res=0;
+	for(int i=1;i<1<<m;i++) // 1<<m 表示2的m次方，遍历每一种方案数 
+	{
+		int t=1,cnt=0; // t表示当前所有质数的乘积，即集合的交集；cnt表示当前i中包含几个1，即集合数 
+		for(int j=0;j<m;j++)
+			if(i>>j&1)
+			{
+				cnt++;
+				if((LL)t*p[j]>n)
+				{
+					t=-1;
+					break;
+				}
+				t*=p[j];
+			}	
+		
+		if(t!=-1)
+		{
+			if(cnt%2) res+=n/t; // 集合个数为奇数，前面符号为+
+			else res-=n/t; 
+		}
+	} 
+	
+	cout<<res<<endl;
+	
+	return 0;
+}
+```
+
+
+
+## 博弈论
+
+### Nim游戏
+
+给定n堆石子，两位玩家轮流操作，每次操作可以从任意一堆石子中拿走任意数量的石子（可以拿完，但不能不拿），最后无法进行操作的人视为失败。 如果两人都采用最优策略，先手是否必胜？
+
+我们把这种游戏称为NIM博弈。把游戏过程中面临的状态称为局面。整局游戏第一个行动的称为先手，第二个行动的称为后手。若在某一局面下无论采取何种行动，都会输掉游戏，则称该该局面必败。所谓采取最优策略是指，若在某一局面下存在某种行动，使得行动后对面面临必败局面，则优先采取该行动。同时，这样的局面被称为必胜。我们讨论的博弈问题一般都只考虑理想情况，即两人均无失误，都采取最优策略行动时游戏的结果。NIM博弈不存在平局，只有先手必胜和先手必败两种情况。
+
+---
+
+**定理**：NIM博弈先手必胜，当且仅当A1^A2^...^An != 0
+
+
+
+### 公平组合游戏ICG
+
+若一个游戏满足：
+
+1. 由两名玩家交替行动；
+2. 在游戏进程的任意时刻，可以执行的合法行动与轮到哪名玩家无关；
+3. 不能行动的玩家判负；
+
+则称该游戏为一个公平组合游戏。
+
+NIM博弈属于公平组合游戏，但城建的棋类游戏，比如围棋，就不是公平组合游戏，因为双方只能落黑子或白子，胜负判定也比较负责，不满足条件2和条件3。
+
+
+
+### 有向图游戏
+
+给定一个有向无环图，图中有一个唯一的起点，在起点上放有一枚棋子。两名玩家交替地把这枚棋子沿有向边进行移动，每次可以移动一步，无法移动者判负，该游戏被称为有向图游戏。
+
+任何一个公平组合游戏都可以转化为有向图游戏，具体方法是，把每个局面看成图中的一个节点，并且从每个局面向沿着合法行动能够到达地下一个局面连有向边。
+
+
+
+
 
